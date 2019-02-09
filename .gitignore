@@ -1,0 +1,9 @@
+*.mp4
+output_videos/
+output_images/
+__pycache__/
+archive_solution/
+examples/
+camera_cal/
+.idea/
+test_images/
