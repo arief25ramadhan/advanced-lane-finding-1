@@ -62,7 +62,6 @@ def undistort(img, mtx, dist):
 
 
 def threshold(img, s_thresh=(100, 255), sx_thresh=(20, 100)):
-    # TODO: create trackbar GUI with OpenCV
 
     # TODO : check other color spaces
     # If you want to continue to explore additional color channels, I have seen that the L channel from LUV with lower
