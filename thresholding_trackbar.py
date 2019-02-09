@@ -58,7 +58,7 @@ def nothing(x):
 
 
 # Read sample image and create window
-sample_img = cv2.imread('test_images/challenge.png')
+sample_img = cv2.imread('test_images/vlcsnap-2019-02-09-23h18m38s623.png')
 cv2.namedWindow('Set threshold values')
 height, width = sample_img.shape[:2]
 sample_img = cv2.resize(sample_img, (width // 2, height // 2))

@@ -61,7 +61,7 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist)
 
 
-def threshold(img, s_thresh=(100, 255), sx_thresh=(20, 100)):
+def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200)):
 
     # TODO : check other color spaces
     # If you want to continue to explore additional color channels, I have seen that the L channel from LUV with lower
@@ -79,30 +79,28 @@ def threshold(img, s_thresh=(100, 255), sx_thresh=(20, 100)):
     # Make a copy of the image
     img = np.copy(img)
 
-    # Convert to HLS color space
-    hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
-    l_channel = hls[:, :, 1]
-    s_channel = hls[:, :, 2]
+    # Convert to Lab color space
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2Lab)
+    b_channel = lab[:, :, 2]
 
-    # Sobel x
-    sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
-    abs_sobelx = np.absolute(sobel_x)
-    scaled_sobel = np.uint8(255 * abs_sobelx / np.max(abs_sobelx))
+    # Convert to LUV color space
+    luv = cv2.cvtColor(img, cv2.COLOR_RGB2Luv)
+    l_channel = luv[:, :, 0]
 
-    # Threshold x gradient
-    sx_binary = np.zeros_like(scaled_sobel)
-    sx_binary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
+    # Threshold b color channel
+    b_binary = np.zeros_like(b_channel)
+    b_binary[(b_channel >= b_thresh[0]) & (b_channel <= b_thresh[1])] = 1
 
-    # Threshold color channel
-    s_binary = np.zeros_like(s_channel)
-    s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
+    # Threshold l color channel
+    l_binary = np.zeros_like(l_channel)
+    l_binary[(l_channel >= l_thresh[0]) & (l_channel <= l_thresh[1])] = 1
 
-    # Stack channels (binary to colored image, S channel: blue, sobelx: green)
-    color_binary = np.dstack((s_binary, sx_binary, np.zeros_like(sx_binary))) * 255
+    # Stack channels (binary to colored image, L channel: blue, b channel: green)
+    color_binary = np.dstack((np.zeros_like(l_binary), b_binary, l_binary)) * 255
 
     # Combine thresholds
-    combined_binary = np.zeros_like(sx_binary)
-    combined_binary[(s_binary == 1) | (sx_binary == 1)] = 1
+    combined_binary = np.zeros_like(b_binary)
+    combined_binary[(b_binary == 1) | (l_binary == 1)] = 1
     combined_binary_out = np.dstack((combined_binary, combined_binary, combined_binary)) * 255
 
     # return color_binary

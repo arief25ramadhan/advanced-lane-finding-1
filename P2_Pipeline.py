@@ -49,7 +49,7 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="short"):
+def video_pipeline(video, mode="long"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -95,16 +95,12 @@ def find_lane_lines(img):
 
     # If previous lane was detected, search next to curve, otherwise use window method
     if (left_lane.detected is False) or (right_lane.detected is False):
-        print("sliding windows search")
         left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
     else:
         try:
-            print("poly search")
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
 
         except TypeError:
-            print("error, probably no pixels found")
-            print("sliding windows search")
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
     #cv2.imwrite('output_images/04_lanes_colored.jpg', lanes_colored)
 
@@ -126,7 +122,6 @@ def find_lane_lines(img):
     #if left_lane.detected and right_lane.detected is True:
     if alf.check_fit(left_fit, right_fit, lane_distance) is False:
         # TODO: dont set previous fit if its the first frame
-        print("fit not ok")
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
         # left_lane.current_fitx = left_lane.previous_fitx
@@ -136,7 +131,6 @@ def find_lane_lines(img):
         right_lane.detected = False
 
     else:
-        print("fit ok")
         # If fit is good, use current values and indicate that lanes were not found
         left_lane.current_fit = left_fit
         right_lane.current_fit = right_fit
@@ -207,6 +201,6 @@ right_lane = alf.Line()
 # 2) Test pipeline
 # TODO: set mode somewhere else?
 # Set mode: mark_lanes OR debug
-mode = 'mark_lanes'
+mode = 'debug'
 # Test on image or video
-test_pipeline('video1')
+test_pipeline('video3')
