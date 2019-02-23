@@ -52,7 +52,15 @@ def threshold(inp_image, mode="hls_sobelx", thresh1=(100, 255), thresh2=(20, 100
     # Stack channels (binary to colored image, L channel: blue, b channel: green)
     color_binary_labluv_sobelx = np.dstack((l_binary, b_binary, sx_binary)) * 255
 
-    return color_binary_labluv_sobelx
+    sobel_white_binary = np.zeros_like(l_channel)
+    sobel_white_binary[(sx_binary == 1) & (l_binary == 1)] = 1
+
+    sobel_yellow_binary = np.zeros_like(l_channel)
+    sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
+
+    white_sobelx_and_color = np.dstack((sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
+
+    return white_sobelx_and_color
 
 
 def nothing(x):

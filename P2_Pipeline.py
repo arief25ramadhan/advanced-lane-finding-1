@@ -204,4 +204,4 @@ right_lane = alf.Line()
 # Set mode: mark_lanes OR debug
 mode = 'debug'
 # Test on image or video
-test_pipeline('video3')
+test_pipeline('video2')

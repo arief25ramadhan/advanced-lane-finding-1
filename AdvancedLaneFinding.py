@@ -61,7 +61,7 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist)
 
 
-def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200)):
+def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)):
 
     # TODO : check other color spaces
     # If you want to continue to explore additional color channels, I have seen that the L channel from LUV with lower
@@ -96,6 +96,30 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200)):
     l_binary = np.zeros_like(l_channel)
     l_binary[(l_channel >= l_thresh[0]) & (l_channel <= l_thresh[1])] = 1
 
+    # Sobelx
+    sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
+    abs_sobelx = np.absolute(sobel_x)
+    scaled_sobel = np.uint8(255 * abs_sobelx / np.max(abs_sobelx))
+
+    # Threshold x gradient
+    sx_binary = np.zeros_like(scaled_sobel)
+    sx_binary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
+
+    # Sobelx AND white
+    sobel_white_binary = np.zeros_like(l_channel)
+    sobel_white_binary[(sx_binary == 1) & (l_binary == 1)] = 1
+
+    # Sobelx AND yellow
+    sobel_yellow_binary = np.zeros_like(l_channel)
+    sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
+
+    white_sobelx_and_color = np.dstack(
+        (sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
+
+    # Combine sobelx-yellow and sobelx-white
+    combined_binary_sobel = np.zeros_like(b_binary)
+    combined_binary_sobel[(sobel_white_binary == 1) | (sobel_yellow_binary == 1)] = 1
+
     # Stack channels (binary to colored image, L channel: blue, b channel: green)
     color_binary = np.dstack((np.zeros_like(l_binary), b_binary, l_binary)) * 255
 
@@ -106,7 +130,7 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200)):
 
     # return color_binary
     # cv2.imwrite('output_images/02_thresholded.jpg', color_binary)
-    return combined_binary, color_binary
+    return combined_binary_sobel, white_sobelx_and_color
 
 
 def perspective_tr(img):
