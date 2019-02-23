@@ -49,7 +49,7 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="short"):
+def video_pipeline(video, mode="long"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -92,13 +92,17 @@ def find_lane_lines(img):
 
     # If previous lane was detected, search next to curve, otherwise use window method
     if (left_lane.detected is False) or (right_lane.detected is False):
-        left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+        try:
+            left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+        except TypeError:       # if nothing was found
+            pass
     else:
         try:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
-
         except TypeError:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+
+    # TODO: initialize left_fit, right_fit to some thing
 
     # Calculate base position of lane lines to get lane distance
     left_lane.line_base_pos = left_fit[0] * (top_view.shape[0] - 1) ** 2 + left_fit[1] * (top_view.shape[0] - 1) + left_fit[2]
@@ -200,4 +204,4 @@ right_lane = alf.Line()
 # Set mode: mark_lanes OR debug
 mode = 'debug'
 # Test on image or video
-test_pipeline('video1')
+test_pipeline('video2')
