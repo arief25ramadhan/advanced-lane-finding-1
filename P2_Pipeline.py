@@ -200,6 +200,7 @@ right_lane = alf.Line()
 
 # 2) Test pipeline
 # TODO: set mode somewhere else?
+# TODO: turn sanity check ON/OFF
 # Set mode: mark_lanes OR debug
 mode = 'debug'
 # Test on image or video

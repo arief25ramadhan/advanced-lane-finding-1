@@ -75,6 +75,7 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200)):
 
     # Lab is another colorspace that should work well here, especially the "B" channel which should help identify the
     # yellow lanes effectively.
+    # TODO: implement yellow AND white mask
 
     # Make a copy of the image
     img = np.copy(img)
@@ -143,6 +144,8 @@ def fit_poly(img_shape, leftx, lefty, rightx, righty):
 
 
 def sliding_windows(img):
+    # TODO: In cases where no peaks are found, we place a window centered at the location calculated assuming
+    # the location of previous window moved by a precomputed offset.
 
     # Calculate histogram by summing bottom half of image
     bottom_half = img[img.shape[0] // 2:, :]
@@ -350,6 +353,8 @@ def check_fit(left_fit, right_fit, lane_distance):
 
 
 def average_fits(img_shape, lane):
+    #TODO: make this more sophisticated:
+    # right_fit = .05 * right_fit + .95 * right_fit_prev ?
     # Calculates the average fit based on previous n values
     sum = 0
     n = 5
