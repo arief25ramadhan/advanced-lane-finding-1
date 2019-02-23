@@ -49,7 +49,7 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="long"):
+def video_pipeline(video, mode="short"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -64,7 +64,7 @@ def video_pipeline(video, mode="long"):
     if mode is "long":
         test_input = VideoFileClip(filename + '.mp4')
     elif mode is "short":
-        test_input = VideoFileClip(filename + '.mp4').subclip(0, 3)
+        test_input = VideoFileClip(filename + '.mp4').subclip(1, 3)
 
     # Name ouput file
     date = datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M")
@@ -81,15 +81,12 @@ def find_lane_lines(img):
 
     # 1) Apply distortion correction
     undistorted = alf.undistort(img, cam_mtx, dist_coeffs)
-    # cv2.imwrite('output_images/01_undistorted.jpg', undistorted)
 
     # 2) Use color transforms, gradients, etc., to create a thresholded binary image.
     thresholded, colored_thresholded = alf.threshold(undistorted)
-    #cv2.imwrite('output_images/02_thresholded.jpg', thresholded)
 
     # 3) Apply perspective transform
     top_view, M, Minv = alf.perspective_tr(thresholded)
-    #cv2.imwrite('output_images/03_top_view.jpg', top_view*255)
 
     # 4) Detect lane pixels and fit polynomial
 
@@ -102,7 +99,6 @@ def find_lane_lines(img):
 
         except TypeError:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
-    #cv2.imwrite('output_images/04_lanes_colored.jpg', lanes_colored)
 
     # Calculate base position of lane lines to get lane distance
     left_lane.line_base_pos = left_fit[0] * (top_view.shape[0] - 1) ** 2 + left_fit[1] * (top_view.shape[0] - 1) + left_fit[2]
@@ -204,4 +200,4 @@ right_lane = alf.Line()
 # Set mode: mark_lanes OR debug
 mode = 'debug'
 # Test on image or video
-test_pipeline('video2')
+test_pipeline('video1')
