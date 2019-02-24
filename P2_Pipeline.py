@@ -49,7 +49,8 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="long"):
+
+def video_pipeline(video, mode="short"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -64,7 +65,7 @@ def video_pipeline(video, mode="long"):
     if mode is "long":
         test_input = VideoFileClip(filename + '.mp4')
     elif mode is "short":
-        test_input = VideoFileClip(filename + '.mp4').subclip(1, 3)
+        test_input = VideoFileClip(filename + '.mp4').subclip(0, 3)
 
     # Name ouput file
     date = datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M")
@@ -93,26 +94,23 @@ def find_lane_lines(img):
     # If previous lane was detected, search next to curve, otherwise use window method
     if (left_lane.detected is False) or (right_lane.detected is False):
         try:
-            left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+            left_fit, right_fit, lanes_colored = alf.sliding_windows(top_view)
         except TypeError:       # if nothing was found, use previous fit
             left_fit = left_lane.previous_fit
             right_fit = right_lane.previous_fit
-            left_fitx = left_lane.previous_fitx
-            right_fitx = right_lane.previous_fitx
             lanes_colored = np.zeros_like(img)
     else:
         try:
-            left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
+            left_fit, right_fit, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
         except TypeError:
             try:
-                left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+                left_fit, right_fit, lanes_colored = alf.sliding_windows(top_view)
             except TypeError:  # if nothing was found, use previous fit
                 left_fit = left_lane.previous_fit
                 right_fit = right_lane.previous_fit
-                left_fitx = left_lane.previous_fitx
-                right_fitx = right_lane.previous_fitx
                 lanes_colored = np.zeros_like(img)
 
+    # TODO: make img_shape a global constant?
     # TODO: initialize left_fit, right_fit to some thing
 
     # Calculate base position of lane lines to get lane distance
@@ -122,7 +120,7 @@ def find_lane_lines(img):
 
     # 5) Determine lane curvature and position of the vehicle
     # Calculate curvature
-    curvature = alf.measure_curvature_real(top_view.shape, left_fitx, right_fitx)
+    curvature = alf.measure_curvature_real(top_view.shape, left_fit, right_fit)
     left_lane.radius_of_curvature = curvature
     right_lane.radius_of_curvature = curvature
 
@@ -139,9 +137,7 @@ def find_lane_lines(img):
         # TODO: dont set previous fit if its the first frame
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
-        # left_lane.current_fitx = left_lane.previous_fitx
         right_lane.current_fit = right_lane.previous_fit
-        # right_lane.current_fitx = right_lane.previous_fitx
         left_lane.detected = False
         right_lane.detected = False
 
@@ -149,8 +145,6 @@ def find_lane_lines(img):
         # If fit is good, use current values and indicate that lanes were found
         left_lane.current_fit = left_fit
         right_lane.current_fit = right_fit
-        left_lane.current_fitx = left_fitx
-        right_lane.current_fitx = right_fitx
         left_lane.detected = True
         right_lane.detected = True
         left_lane.initialized = True
@@ -159,17 +153,15 @@ def find_lane_lines(img):
         right_lane.frame_cnt += 1
 
     # Calculate the average of the recent fits and set this as the current fit
-    average_left_fitx, left_lane.average_fit = alf.average_fits(top_view.shape, left_lane)
-    average_right_fitx, right_lane.average_fit = alf.average_fits(top_view.shape, right_lane)
+    left_lane.average_fit = alf.average_fits(top_view.shape, left_lane)
+    right_lane.average_fit = alf.average_fits(top_view.shape, right_lane)
 
     # Set average value as current value
     left_lane.current_fit = left_lane.average_fit
-    left_lane.current_fitx = average_left_fitx
     right_lane.current_fit = right_lane.average_fit
-    right_lane.current_fitx = average_right_fitx
 
     # Update all calculations based on averaged values
-    #curvature = alf.measure_curvature_real(top_view.shape, left_lane.current_fitx, right_lane.current_fitx)
+    #curvature = alf.measure_curvature_real(top_view.shape, left_lane.current_fit, right_lane.current_fit)
     #left_lane.radius_of_curvature = curvature
     #right_lane.radius_of_curvature = curvature
 
@@ -178,15 +170,12 @@ def find_lane_lines(img):
     #vehicle_position = alf.get_position(undistorted.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
-    # TODO: put calculation of fitx here, to avoid all previous other mentions of it
-    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fitx, right_lane.current_fitx, curvature,
+    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fit, right_lane.current_fit, curvature,
                                   vehicle_position, Minv)
 
     # Set current values as previous values for next frame
     left_lane.previous_fit = left_lane.current_fit
-    left_lane.previous_fitx = left_lane.current_fitx
     right_lane.previous_fit = right_lane.current_fit
-    right_lane.previous_fitx = right_lane.current_fitx
 
     # Reset / empty current fit
     left_lane.current_fit = [np.array([False])]
