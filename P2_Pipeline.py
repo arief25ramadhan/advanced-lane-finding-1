@@ -49,7 +49,7 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="short"):
+def video_pipeline(video, mode="long"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -104,7 +104,14 @@ def find_lane_lines(img):
         try:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
         except TypeError:
-            left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+            try:
+                left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
+            except TypeError:  # if nothing was found, use previous fit
+                left_fit = left_lane.previous_fit
+                right_fit = right_lane.previous_fit
+                left_fitx = left_lane.previous_fitx
+                right_fitx = right_lane.previous_fitx
+                lanes_colored = np.zeros_like(img)
 
     # TODO: initialize left_fit, right_fit to some thing
 
