@@ -49,7 +49,7 @@ def image_pipeline():
         output_fname_image = 'output_images/test_output'
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
-def video_pipeline(video, mode="long"):
+def video_pipeline(video, mode="short"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -152,13 +152,13 @@ def find_lane_lines(img):
         right_lane.frame_cnt += 1
 
     # Calculate the average of the recent fits and set this as the current fit
-    average_left_fitx, average_left_fit = alf.average_fits(top_view.shape, left_lane)
-    average_right_fitx, average_right_fit = alf.average_fits(top_view.shape, right_lane)
+    average_left_fitx, left_lane.average_fit = alf.average_fits(top_view.shape, left_lane)
+    average_right_fitx, right_lane.average_fit = alf.average_fits(top_view.shape, right_lane)
 
     # Set average value as current value
-    left_lane.current_fit = average_left_fit
+    left_lane.current_fit = left_lane.average_fit
     left_lane.current_fitx = average_left_fitx
-    right_lane.current_fit = average_right_fit
+    right_lane.current_fit = right_lane.average_fit
     right_lane.current_fitx = average_right_fitx
 
     # Update all calculations based on averaged values
@@ -171,6 +171,7 @@ def find_lane_lines(img):
     #vehicle_position = alf.get_position(undistorted.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
+    # TODO: put calculation of fitx here, to avoid all previous other mentions of it
     lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fitx, right_lane.current_fitx, curvature,
                                   vehicle_position, Minv)
 

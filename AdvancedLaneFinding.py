@@ -375,6 +375,12 @@ def check_fit(left_lane, right_lane):
     coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
     coeff_diff_left = np.sqrt(coeff_diff_left)
     # Check if parameters are ok
+    print("left average: ", '%.6f' % left_lane.average_fit[0])
+    print("right average: ", '%.6f' % right_lane.average_fit[0])
+    print("left current: ", '%.6f' % left_lane.current_fit[0])
+    print("right current: ", '%.6f' % right_lane.current_fit[0])
+    print("left error: ", '%.6f' % coeff_diff_left)
+    print("right error: ", '%.6f' % coeff_diff_right)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
             if abs(coeff_diff_left) > 0.5 * left_lane.average_fit[0] or abs(coeff_diff_right) > 0.5 * right_lane.average_fit[0]:
@@ -397,17 +403,6 @@ def average_fits(img_shape, lane):
     n = 5
     average_fit = [0, 0, 0]
 
-    # If we have enough fits, calculate the average
-    # TODO: sort these fors in some logical order...
-    for i in range(0, 3):
-        for num in range(0, len(lane.previous_fits)):
-
-            sum = sum + lane.previous_fits[num][i]
-        average_fit[i] = sum / n
-    else:
-        # TODO: set all 3 values!
-        average_fit = lane.current_fit
-
     # TODO: check if these can be done in the previous ifs
     # If we do not have enough fits, append the list with the current fit
     if len(lane.previous_fits) < n:
@@ -416,6 +411,14 @@ def average_fits(img_shape, lane):
     if len(lane.previous_fits) == n:
         lane.previous_fits.pop(n-1)
         lane.previous_fits.insert(0, lane.current_fit)
+
+    # If we have enough fits, calculate the average
+    # TODO: sort these fors in some logical order...
+    for i in range(0, 3):
+        for num in range(0, len(lane.previous_fits)):
+
+            sum = sum + lane.previous_fits[num][i]
+        average_fit[i] = sum / len(lane.previous_fits)
 
     # Generate y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
