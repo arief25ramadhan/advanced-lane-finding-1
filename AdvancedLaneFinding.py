@@ -368,11 +368,11 @@ def get_position(img_shape, left_lane_pos, right_lane_pos):
 
 
 def check_fit(left_lane, right_lane):
-    # Difference in previous and current coefficients:
-    coeff_diff_right = np.sum((right_lane.current_fit[0] - right_lane.previous_fit[0])**2)
+    # Difference in average and current coefficients:
+    coeff_diff_right = np.sum((right_lane.current_fit[0] - right_lane.average_fit[0])**2)
     coeff_diff_right = np.sqrt(coeff_diff_right)
 
-    coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
+    coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.average_fit[0]) ** 2)
     coeff_diff_left = np.sqrt(coeff_diff_left)
     # Check if parameters are ok
     print("left average: ", '%.6f' % left_lane.average_fit[0])
