@@ -28,6 +28,8 @@ class Line:
         self.initialized = False
         # Average fit
         self.average_fit = np.array([0, 0, 0])
+        # Frame counter
+        self.frame_cnt = 0
 
 # FUNCTION DEFINITIONS
 
@@ -374,8 +376,11 @@ def check_fit(left_lane, right_lane):
     coeff_diff_left = np.sqrt(coeff_diff_left)
     # Check if parameters are ok
     if (left_lane.initialized is True) and (right_lane.initialized is True):
-        if abs(coeff_diff_left) > 0.5 * left_lane.current_fit[0] or abs(coeff_diff_right) > 0.5 * right_lane.current_fit[0]:
-            result = False
+        if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
+            if abs(coeff_diff_left) > 0.5 * left_lane.average_fit[0] or abs(coeff_diff_right) > 0.5 * right_lane.average_fit[0]:
+                result = False
+            else:
+                result = True
         else:
             result = True
     else:

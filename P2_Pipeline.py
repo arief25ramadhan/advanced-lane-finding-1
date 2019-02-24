@@ -148,6 +148,8 @@ def find_lane_lines(img):
         right_lane.detected = True
         left_lane.initialized = True
         right_lane.initialized = True
+        left_lane.frame_cnt += 1
+        right_lane.frame_cnt += 1
 
     # Calculate the average of the recent fits and set this as the current fit
     average_left_fitx, average_left_fit = alf.average_fits(top_view.shape, left_lane)
