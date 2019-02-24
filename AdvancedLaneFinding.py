@@ -24,6 +24,10 @@ class Line:
         self.line_base_pos = None
         # Difference in coefficients
         self.diffs = np.array([0, 0, 0], dtype='float')
+        # For first frame
+        self.initialized = False
+        # Average fit
+        self.average_fit = np.array([0, 0, 0])
 
 # FUNCTION DEFINITIONS
 
@@ -361,15 +365,19 @@ def get_position(img_shape, left_lane_pos, right_lane_pos):
     return real_position
 
 
-def check_fit(left_fit, right_fit, lane_distance):
+def check_fit(left_lane, right_lane):
+    # Difference in previous and current coefficients:
+    coeff_diff_right = np.sum((right_lane.current_fit[0] - right_lane.previous_fit[0])**2)
+    coeff_diff_right = np.sqrt(coeff_diff_right)
 
-    # Parameters to check:
-    parameter_diffs = (right_fit[0] - left_fit[0],
-                       right_fit[1] - left_fit[1],
-                       right_fit[2] - left_fit[2])
+    coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
+    coeff_diff_left = np.sqrt(coeff_diff_left)
     # Check if parameters are ok
-    if abs(parameter_diffs[0]) > 0.0004 or parameter_diffs[2] < 250 or lane_distance < 600:
-        result = False
+    if (left_lane.initialized is True) and (right_lane.initialized is True):
+        if abs(coeff_diff_left) > 0.5 * left_lane.current_fit[0] or abs(coeff_diff_right) > 0.5 * right_lane.current_fit[0]:
+            result = False
+        else:
+            result = True
     else:
         result = True
 
@@ -385,12 +393,12 @@ def average_fits(img_shape, lane):
     average_fit = [0, 0, 0]
 
     # If we have enough fits, calculate the average
-    if len(lane.previous_fits) == n:
-        for i in range(0, 3):
-            for num in range(0, n):
+    # TODO: sort these fors in some logical order...
+    for i in range(0, 3):
+        for num in range(0, len(lane.previous_fits)):
 
-                sum = sum + lane.previous_fits[num][i]
-            average_fit[i] = sum / n
+            sum = sum + lane.previous_fits[num][i]
+        average_fit[i] = sum / n
     else:
         # TODO: set all 3 values!
         average_fit = lane.current_fit
@@ -409,7 +417,7 @@ def average_fits(img_shape, lane):
 
     # Calculate x values using polynomial coeffs
     average_fitx = average_fit[0] * ploty ** 2 + average_fit[1] * ploty + average_fit[2]
-    return average_fitx
+    return average_fitx, average_fit
 
 
 def draw_lanes(warped, undist, left_fitx, right_fitx, curvature, position, Minv):

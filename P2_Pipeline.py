@@ -94,8 +94,12 @@ def find_lane_lines(img):
     if (left_lane.detected is False) or (right_lane.detected is False):
         try:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.sliding_windows(top_view)
-        except TypeError:       # if nothing was found
-            pass
+        except TypeError:       # if nothing was found, use previous fit
+            left_fit = left_lane.previous_fit
+            right_fit = right_lane.previous_fit
+            left_fitx = left_lane.previous_fitx
+            right_fitx = right_lane.previous_fitx
+            lanes_colored = np.zeros_like(img)
     else:
         try:
             left_fit, right_fit, left_fitx, right_fitx, lanes_colored = alf.search_around_poly(top_view, left_lane.previous_fit, right_lane.previous_fit)
@@ -119,8 +123,12 @@ def find_lane_lines(img):
     vehicle_position = alf.get_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
     # Check if values make sense
     # TODO: check if fitxs are needed
+
+    left_lane.current_fit = left_fit
+    right_lane.current_fit = right_fit
+
     #if left_lane.detected and right_lane.detected is True:
-    if alf.check_fit(left_fit, right_fit, lane_distance) is False:
+    if alf.check_fit(left_lane, right_lane) is False:
         # TODO: dont set previous fit if its the first frame
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
@@ -131,20 +139,24 @@ def find_lane_lines(img):
         right_lane.detected = False
 
     else:
-        # If fit is good, use current values and indicate that lanes were not found
+        # If fit is good, use current values and indicate that lanes were found
         left_lane.current_fit = left_fit
         right_lane.current_fit = right_fit
         left_lane.current_fitx = left_fitx
         right_lane.current_fitx = right_fitx
         left_lane.detected = True
         right_lane.detected = True
+        left_lane.initialized = True
+        right_lane.initialized = True
 
     # Calculate the average of the recent fits and set this as the current fit
-    average_left_fitx = alf.average_fits(top_view.shape, left_lane)
-    average_right_fitx = alf.average_fits(top_view.shape, right_lane)
+    average_left_fitx, average_left_fit = alf.average_fits(top_view.shape, left_lane)
+    average_right_fitx, average_right_fit = alf.average_fits(top_view.shape, right_lane)
 
     # Set average value as current value
+    left_lane.current_fit = average_left_fit
     left_lane.current_fitx = average_left_fitx
+    right_lane.current_fit = average_right_fit
     right_lane.current_fitx = average_right_fitx
 
     # Update all calculations based on averaged values
@@ -168,7 +180,7 @@ def find_lane_lines(img):
 
     # Reset / empty current fit
     left_lane.current_fit = [np.array([False])]
-    left_lane.current_fit = [np.array([False])]
+    right_lane.current_fit = [np.array([False])]
 
     if mode is 'debug':
         debug_top = np.concatenate((img[:, 0:1279:2, :], lanes_marked[:, 0:1279:2, :]), axis=1)
