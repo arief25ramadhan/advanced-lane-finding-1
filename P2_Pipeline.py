@@ -90,7 +90,6 @@ def find_lane_lines(img):
     top_view, M, Minv = alf.perspective_tr(thresholded)
 
     # 4) Detect lane pixels and fit polynomial
-
     # If previous lane was detected, search next to curve, otherwise use window method
     if (left_lane.detected is False) or (right_lane.detected is False):
         try:
