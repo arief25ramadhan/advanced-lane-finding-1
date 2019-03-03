@@ -122,12 +122,11 @@ def find_lane_lines(img):
 
     # 5) Determine lane curvature and position of the vehicle
     # Calculate curvature
-    curvature = alf.measure_curvature_real(top_view.shape, left_fit, right_fit)
-    left_lane.radius_of_curvature = curvature
-    right_lane.radius_of_curvature = curvature
+    left_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, left_fit)
+    right_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, right_fit)
 
     # Take the mean value of the two curvatures
-    # curvature = left_curverad + right_curverad / 2
+    curvature = left_lane.radius_of_curvature + right_lane.radius_of_curvature / 2
 
     # Calculate vehicle position
     vehicle_position = alf.get_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
@@ -156,6 +155,8 @@ def find_lane_lines(img):
     # Calculate the average of the recent fits and set this as the current fit
     left_lane.average_fit = alf.average_fits(top_view.shape, left_lane)
     right_lane.average_fit = alf.average_fits(top_view.shape, right_lane)
+    left_lane.average_curvature = alf.average_curvature(top_view.shape, left_lane)
+    right_lane.average_curvature = alf.average_curvature(top_view.shape, right_lane)
 
     # Set average value as current value
     #left_lane.current_fit = left_lane.average_fit

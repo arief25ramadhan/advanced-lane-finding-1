@@ -28,6 +28,10 @@ class Line:
         self.initialized = False
         # Average fit
         self.average_fit = np.array([0, 0, 0])
+        # Average curvature
+        self.average_curvature = 0
+        # Previous curves
+        self.previous_curves = []
         # Frame counter
         self.frame_cnt = 0
 
@@ -380,6 +384,9 @@ def check_fit(left_lane, right_lane):
     coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
     coeff_diff_left = np.sqrt(coeff_diff_left)
 
+    curve_diff_right = right_lane.radius_of_curvature - right_lane.average_curvature
+    curve_diff_left = left_lane.radius_of_curvature - left_lane.average_curvature
+
     # Check if parameters are ok
     #print("left average: ", '%.6f' % left_lane.average_fit[0])
     #print("right average: ", '%.6f' % right_lane.average_fit[0])
@@ -391,7 +398,7 @@ def check_fit(left_lane, right_lane):
     print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            if abs(coeff_diff_left) > left_lane.previous_fit[0] or abs(coeff_diff_right) > 3 * right_lane.previous_fit[0]:
+            if abs(curve_diff_left) > left_lane.average_curvature or abs(curve_diff_right) > right_lane.average_curvature:
                 result = False
             else:
                 result = True
@@ -431,6 +438,30 @@ def average_fits(img_shape, lane):
             average_fit[i] = sum / len(lane.previous_fits)
 
     return average_fit
+
+
+def average_curvature(img_shape, lane):
+    sum = 0
+    n = 5
+    average_curve = 0
+
+    if len(lane.previous_curves) < n:
+        lane.previous_curves.append(lane.radius_of_curvature)
+    # If amount of fits == n, remove the last element and add the current one
+    if len(lane.previous_curves) == n:
+        lane.previous_curves.pop(n-1)
+        lane.previous_curves.insert(0, lane.current_fit)
+
+    # If we have enough fits, calculate the average
+    # TODO: sort these fors in some logical order...
+    if (len(lane.previous_curves) > 0):
+        for num in range(0, len(lane.previous_curves)):
+
+            sum = sum + lane.previous_curves[num][i]
+                # TODO: divide by length instead, checking for zero division
+        average_curve = sum / len(lane.previous_curves)
+
+    return average_curve
 
 
 def draw_lanes(warped, undist, left_fit, right_fit, curvature, position, Minv):
