@@ -413,6 +413,15 @@ def average_fits(img_shape, lane):
     n = 15
     average_fit = [0, 0, 0]
 
+    # TODO: check if these can be done in the previous ifs
+    # If we do not have enough fits, append the list with the current fit
+    if len(lane.previous_fits) < n:
+        lane.previous_fits.append(lane.current_fit)
+    # If amount of fits == n, remove the last element and add the current one
+    if len(lane.previous_fits) == n:
+        lane.previous_fits.pop(n-1)
+        lane.previous_fits.insert(0, lane.current_fit)
+
     # If we have enough fits, calculate the average
     # TODO: sort these fors in some logical order...
     if (len(lane.previous_fits) > 0):
@@ -422,16 +431,6 @@ def average_fits(img_shape, lane):
                 sum = sum + lane.previous_fits[num][i]
                 # TODO: divide by length instead, checking for zero division
             average_fit[i] = sum / len(lane.previous_fits)
-
-
-    # TODO: check if these can be done in the previous ifs
-    # If we do not have enough fits, append the list with the current fit
-    if len(lane.previous_fits) < n:
-        lane.previous_fits.append(lane.current_fit)
-    # If amount of fits == n, remove the last element and add the current one
-    if len(lane.previous_fits) == n:
-        lane.previous_fits.pop(n-1)
-        lane.previous_fits.insert(0, lane.current_fit)
 
     return average_fit
 
