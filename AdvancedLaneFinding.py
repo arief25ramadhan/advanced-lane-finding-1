@@ -410,7 +410,7 @@ def average_fits(img_shape, lane):
     # right_fit = .05 * right_fit + .95 * right_fit_prev ?
     # Calculates the average fit based on previous n values
     sum = 0
-    n = 5
+    n = 15
     average_fit = [0, 0, 0]
 
     # If we have enough fits, calculate the average
