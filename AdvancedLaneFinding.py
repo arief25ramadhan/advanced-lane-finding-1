@@ -398,6 +398,7 @@ def check_fit(left_lane, right_lane):
     print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
+            #print(left_lane.average_curvature, right_lane.average_curvature)
             if abs(curve_diff_left) > left_lane.average_curvature or abs(curve_diff_right) > right_lane.average_curvature:
                 result = False
             else:
@@ -450,14 +451,14 @@ def average_curvature(img_shape, lane):
     # If amount of fits == n, remove the last element and add the current one
     if len(lane.previous_curves) == n:
         lane.previous_curves.pop(n-1)
-        lane.previous_curves.insert(0, lane.current_fit)
+        lane.previous_curves.insert(0, lane.radius_of_curvature)
 
     # If we have enough fits, calculate the average
     # TODO: sort these fors in some logical order...
     if (len(lane.previous_curves) > 0):
-        for num in range(0, len(lane.previous_curves)):
+        for i in range(0, len(lane.previous_curves)):
 
-            sum = sum + lane.previous_curves[num][i]
+            sum = sum + lane.previous_curves[i]
                 # TODO: divide by length instead, checking for zero division
         average_curve = sum / len(lane.previous_curves)
 
