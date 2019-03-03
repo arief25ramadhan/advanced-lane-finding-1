@@ -126,6 +126,9 @@ def find_lane_lines(img):
     left_lane.radius_of_curvature = curvature
     right_lane.radius_of_curvature = curvature
 
+    # Take the mean value of the two curvatures
+    # curvature = left_curverad + right_curverad / 2
+
     # Calculate vehicle position
     vehicle_position = alf.get_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 

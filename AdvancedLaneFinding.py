@@ -332,7 +332,7 @@ def search_around_poly(binary_warped, left_fit, right_fit):
     return left_fit, right_fit, out_img
 
 
-def measure_curvature_real(img_shape, left_fit, right_fit):
+def measure_curvature_real(img_shape, fit):
     # Calculates the curvature of polynomial functions in meters
     ym_per_pix = 30 / 720  # meters per pixel in y dimension
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
@@ -340,23 +340,18 @@ def measure_curvature_real(img_shape, left_fit, right_fit):
     # Generate y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
 
-    left_fitx, right_fitx = calc_x_values(img_shape, left_fit, right_fit)
+    # Calculate x values using polynomial coeffs
+    fitx = fit[0] * ploty ** 2 + fit[1] * ploty + fit[2]
 
     # Evaluate at bottom of image
     y_eval = np.max(ploty)
 
     # Fit curves with corrected axes
-    left_curve_fit = np.polyfit(ploty * ym_per_pix, left_fitx * xm_per_pix, 2)
-    right_curve_fit = np.polyfit(ploty * ym_per_pix, left_fitx * xm_per_pix, 2)
+    curve_fit = np.polyfit(ploty * ym_per_pix, fitx * xm_per_pix, 2)
 
     # Calculate curvature values for left and right lanes
-    left_curverad = ((1 + (2 * left_curve_fit[0] * y_eval * ym_per_pix + left_curve_fit[1]) ** 2) ** 1.5) / np.absolute(
-        2 * left_curve_fit[0])
-    right_curverad = ((1 + (2 * right_curve_fit[0] * y_eval * ym_per_pix + right_curve_fit[1]) ** 2) ** 1.5) / np.absolute(
-        2 * right_curve_fit[0])
-
-    # Take the mean value of the two curvatures
-    curvature = left_curverad + right_curverad / 2
+    curvature = ((1 + (2 * curve_fit[0] * y_eval * ym_per_pix + curve_fit[1]) ** 2) ** 1.5) / np.absolute(
+        2 * curve_fit[0])
 
     return curvature
 
@@ -384,6 +379,7 @@ def check_fit(left_lane, right_lane):
 
     coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
     coeff_diff_left = np.sqrt(coeff_diff_left)
+
     # Check if parameters are ok
     #print("left average: ", '%.6f' % left_lane.average_fit[0])
     #print("right average: ", '%.6f' % right_lane.average_fit[0])
@@ -391,9 +387,11 @@ def check_fit(left_lane, right_lane):
     #print("right current: ", '%.6f' % right_lane.current_fit[0])
     #print("left error: ", '%.6f' % coeff_diff_left)
     #print("right error: ", '%.6f' % coeff_diff_right)
+    print("left curve: ", '%.6f' % left_lane.radius_of_curvature)
+    print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            if abs(coeff_diff_left) > left_lane.previous_fit[0] or abs(coeff_diff_right) > right_lane.previous_fit[0]:
+            if abs(coeff_diff_left) > left_lane.previous_fit[0] or abs(coeff_diff_right) > 3 * right_lane.previous_fit[0]:
                 result = False
             else:
                 result = True
@@ -402,7 +400,7 @@ def check_fit(left_lane, right_lane):
     else:
         result = True
 
-    return True
+    return result
 
 
 def average_fits(img_shape, lane):
