@@ -393,7 +393,7 @@ def check_fit(left_lane, right_lane):
     #print("right error: ", '%.6f' % coeff_diff_right)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            if abs(coeff_diff_left) > 0.5 * left_lane.current_fit[0] or abs(coeff_diff_right) > 0.5 * right_lane.current_fit[0]:
+            if abs(coeff_diff_left) > left_lane.previous_fit[0] or abs(coeff_diff_right) > right_lane.previous_fit[0]:
                 result = False
             else:
                 result = True
@@ -402,7 +402,7 @@ def check_fit(left_lane, right_lane):
     else:
         result = True
 
-    return result
+    return True
 
 
 def average_fits(img_shape, lane):
@@ -415,12 +415,13 @@ def average_fits(img_shape, lane):
 
     # If we have enough fits, calculate the average
     # TODO: sort these fors in some logical order...
-    for i in range(0, 3):
-        for num in range(0, len(lane.previous_fits)):
+    if (len(lane.previous_fits) > 0):
+        for i in range(0, 3):
+            for num in range(0, len(lane.previous_fits)):
 
-            sum = sum + lane.previous_fits[num][i]
-            # TODO: divide by length instead, checking for zero division
-        average_fit[i] = sum / n
+                sum = sum + lane.previous_fits[num][i]
+                # TODO: divide by length instead, checking for zero division
+            average_fit[i] = sum / len(lane.previous_fits)
 
 
     # TODO: check if these can be done in the previous ifs

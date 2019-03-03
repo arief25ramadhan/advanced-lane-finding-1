@@ -50,7 +50,7 @@ def image_pipeline():
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
 
-def video_pipeline(video, mode="short"):
+def video_pipeline(video, mode="long"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -109,6 +109,9 @@ def find_lane_lines(img):
                 right_fit = right_lane.previous_fit
                 lanes_colored = np.zeros_like(img)
 
+    left_lane.current_fit = left_fit
+    right_lane.current_fit = right_fit
+
     # TODO: make img_shape a global constant?
     # TODO: initialize left_fit, right_fit to some thing
 
@@ -125,12 +128,8 @@ def find_lane_lines(img):
 
     # Calculate vehicle position
     vehicle_position = alf.get_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
+
     # Check if values make sense
-    # TODO: check if fitxs are needed
-
-    left_lane.current_fit = left_fit
-    right_lane.current_fit = right_fit
-
     #if left_lane.detected and right_lane.detected is True:
     if alf.check_fit(left_lane, right_lane) is False:
         # TODO: dont set previous fit if its the first frame
@@ -169,7 +168,7 @@ def find_lane_lines(img):
     #vehicle_position = alf.get_position(undistorted.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
-    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fit, right_lane.current_fit, curvature,
+    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.average_fit, right_lane.average_fit, curvature,
                                   vehicle_position, Minv)
 
     # Set current values as previous values for next frame
