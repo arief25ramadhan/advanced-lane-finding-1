@@ -163,6 +163,8 @@ def find_lane_lines(img):
     left_lane.average_curvature = alf.average_curvature(top_view.shape, left_lane)
     right_lane.average_curvature = alf.average_curvature(top_view.shape, right_lane)
 
+    lane.average_bottom_width, lane.average_top_width = alf.average_width(top_view.shape, lane)
+
     # Set average value as current value
     #left_lane.current_fit = left_lane.average_fit
     #right_lane.current_fit = right_lane.average_fit

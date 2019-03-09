@@ -40,6 +40,10 @@ class Lane:
     def __init__(self):
         self.bottom_width = 0
         self.top_width = 0
+        self.average_bottom_width = 0
+        self.average_top_width = 0
+        self.previous_bottom_widths = []
+        self.previous_top_widths = []
 
 
 # FUNCTION DEFINITIONS
@@ -383,7 +387,7 @@ def get_position(img_shape, left_lane_pos, right_lane_pos):
     return real_position
 
 
-def check_fit(left_lane, right_lane):
+def check_fit(left_lane, right_lane, lane):
     # Difference in average and current coefficients:
     coeff_diff_right = np.sum((right_lane.current_fit[0] - right_lane.previous_fit[0])**2)
     coeff_diff_right = np.sqrt(coeff_diff_right)
@@ -394,21 +398,21 @@ def check_fit(left_lane, right_lane):
     curve_diff_right = right_lane.radius_of_curvature - right_lane.average_curvature
     curve_diff_left = left_lane.radius_of_curvature - left_lane.average_curvature
     curve_diff = abs(right_lane.radius_of_curvature - left_lane.radius_of_curvature)
+
+    top_width_diff = lane.top_width - lane.average_top_width
+    bottom_width_diff = lane.bottom_width - lane.average_bottom_width
+
+    width_check_top = top_width_diff > 0.5 * lane.average_top_width
+    width_check_bottom = bottom_width_diff > 0.5 * lane.average_bottom_width
+
     # Check if parameters are ok
-    #print("left average: ", '%.6f' % left_lane.average_fit[0])
-    #print("right average: ", '%.6f' % right_lane.average_fit[0])
-    #print("left current: ", '%.6f' % left_lane.current_fit[0])
-    #print("right current: ", '%.6f' % right_lane.current_fit[0])
-    #print("left error: ", '%.6f' % coeff_diff_left)
-    #print("right error: ", '%.6f' % coeff_diff_right)
-    # print("left curve: ", '%.6f' % left_lane.radius_of_curvature)
-    # print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
             if abs(curve_diff_left) > 0.5 * left_lane.average_curvature or \
                     abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
                     curve_diff > 0.5 * left_lane.average_curvature or \
-                    curve_diff > 0.5 * right_lane.average_curvature:
+                    curve_diff > 0.5 * right_lane.average_curvature or \
+                    width_check_bottom or width_check_top:
                 result = False
             else:
                 result = True
@@ -424,8 +428,9 @@ def average_fits(img_shape, lane):
     #TODO: make this more sophisticated:
     # right_fit = .05 * right_fit + .95 * right_fit_prev ?
     # Calculates the average fit based on previous n values
+    # TODO: set average as global var
     sum = 0
-    n = 3
+    n = 5
     average_fit = [0, 0, 0]
 
     # TODO: check if these can be done in the previous ifs
@@ -452,7 +457,7 @@ def average_fits(img_shape, lane):
 
 def average_curvature(img_shape, lane):
     sum = 0
-    n = 7
+    n = 5
     average_curve = 0
 
     if len(lane.previous_curves) < n:
@@ -472,6 +477,47 @@ def average_curvature(img_shape, lane):
         average_curve = sum / len(lane.previous_curves)
 
     return average_curve
+
+
+def average_width(img_shape, lane):
+    sum_bottom = 0
+    sum_top = 0
+    n = 5
+    average_bottom_width = 0
+    average_top_width = 0
+
+    if len(lane.previous_bottom_widths) < n:
+        lane.previous_bottom_widths.append(lane.bottom_width)
+    # If amount of fits == n, remove the last element and add the current one
+    if len(lane.previous_bottom_widths) == n:
+        lane.previous_bottom_widths.pop(n-1)
+        lane.previous_bottom_widths.insert(0, lane.bottom_width)
+
+    # If we have enough fits, calculate the average
+    # TODO: sort these fors in some logical order...
+    if (len(lane.previous_bottom_widths) > 0):
+        for i in range(0, len(lane.previous_bottom_widths)):
+
+            sum_bottom = sum_bottom + lane.previous_bottom_widths[i]
+            average_bottom_width = sum_bottom / len(lane.previous_bottom_widths)
+
+
+    if len(lane.previous_top_widths) < n:
+        lane.previous_top_widths.append(lane.top_width)
+    # If amount of fits == n, remove the last element and add the current one
+    if len(lane.previous_top_widths) == n:
+        lane.previous_top_widths.pop(n-1)
+        lane.previous_top_widths.insert(0, lane.top_width)
+
+    # If we have enough fits, calculate the average
+    # TODO: sort these fors in some logical order...
+    if (len(lane.previous_top_widths) > 0):
+        for i in range(0, len(lane.previous_top_widths)):
+
+            sum_top = sum_top + lane.previous_top_widths[i]
+            average_top_width = sum_top / len(lane.previous_top_widths)
+
+    return average_bottom_width, average_top_width
 
 
 def draw_lanes(warped, undist, left_fit, right_fit, curvature, position, Minv):
