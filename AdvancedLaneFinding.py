@@ -402,23 +402,24 @@ def check_fit(left_lane, right_lane, lane):
     top_width_diff = lane.top_width - lane.average_top_width
     bottom_width_diff = lane.bottom_width - lane.average_bottom_width
 
-    width_check_top = top_width_diff > 0.5 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
-    width_check_bottom = bottom_width_diff > 0.5 * lane.average_bottom_width
-    # print("Average bottom: ", lane.average_bottom_width)
-    # print("Average top: ", lane.average_top_width)
-    # print("Previous bottom: ", lane.previous_bottom_widths)
-    # print("Previous top: ", lane.previous_top_widths)
-    # print("Current bottom: ", lane.bottom_width)
-    # print("Current top: ", lane.top_width)
+    width_check_top = top_width_diff > 0.05 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
+    width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
+    cross_check = lane.top_width < 0 or lane.bottom_width < 0
+    print("Average bottom: ", lane.average_bottom_width)
+    #print("Average top: ", lane.average_top_width)
+    #print("Previous bottom: ", lane.previous_bottom_widths)
+    #print("Previous top: ", lane.previous_top_widths)
+    print("Current bottom: ", lane.bottom_width)
+    #print("Current top: ", lane.top_width)
 
     # Check if parameters are ok
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            if abs(curve_diff_left) > 0.5 * left_lane.average_curvature or \
-                    abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
-                    curve_diff > 0.5 * left_lane.average_curvature or \
-                    curve_diff > 0.5 * right_lane.average_curvature or \
-                    width_check_bottom or width_check_top:
+            # if abs(curve_diff_left) > 0.5 * left_lane.average_curvature or \
+                    # abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
+                    # curve_diff > 0.5 * left_lane.average_curvature or \
+                    # curve_diff > 0.5 * right_lane.average_curvature or \
+            if width_check_bottom or width_check_top or cross_check:
                 result = False
             else:
                 result = True
@@ -436,7 +437,7 @@ def average_fits(img_shape, lane):
     # Calculates the average fit based on previous n values
     # TODO: set average as global var
     sum = 0
-    n = 5
+    n = 3
     average_fit = [0, 0, 0]
 
     # TODO: check if these can be done in the previous ifs
@@ -463,7 +464,7 @@ def average_fits(img_shape, lane):
 
 def average_curvature(img_shape, lane):
     sum = 0
-    n = 5
+    n = 3
     average_curve = 0
 
     if len(lane.previous_curves) < n:
@@ -488,7 +489,7 @@ def average_curvature(img_shape, lane):
 def average_width(img_shape, lane):
     sum_bottom = 0
     sum_top = 0
-    n = 5
+    n = 7
     average_bottom_width = 0
     average_top_width = 0
 
