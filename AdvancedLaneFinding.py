@@ -402,8 +402,14 @@ def check_fit(left_lane, right_lane, lane):
     top_width_diff = lane.top_width - lane.average_top_width
     bottom_width_diff = lane.bottom_width - lane.average_bottom_width
 
-    width_check_top = top_width_diff > 0.5 * lane.average_top_width
+    width_check_top = top_width_diff > 0.5 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.5 * lane.average_bottom_width
+    # print("Average bottom: ", lane.average_bottom_width)
+    # print("Average top: ", lane.average_top_width)
+    # print("Previous bottom: ", lane.previous_bottom_widths)
+    # print("Previous top: ", lane.previous_top_widths)
+    # print("Current bottom: ", lane.bottom_width)
+    # print("Current top: ", lane.top_width)
 
     # Check if parameters are ok
     if (left_lane.initialized is True) and (right_lane.initialized is True):

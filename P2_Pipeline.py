@@ -121,7 +121,6 @@ def find_lane_lines(img):
     lane_distance = right_lane.line_base_pos - left_lane.line_base_pos
 
     # Calculate top and bottom position of lane lines for sanity check
-    lane = alf.Lane()
     lane.top_width = right_fit[2] - left_fit[2]
     lane.bottom_width = right_lane.line_base_pos - left_lane.line_base_pos
 
@@ -214,9 +213,10 @@ images = glob.glob('camera_cal/*.jpg')
 # 0) Compute camera calibration matrix & distortion coefficients
 cam_mtx, dist_coeffs = alf.camera_calibration(images, nx, ny)
 
-# 1) Create line objects
+# 1) Create line / lane objects
 left_lane = alf.Line()
 right_lane = alf.Line()
+lane = alf.Lane()
 
 # 2) Test pipeline
 # TODO: set mode somewhere else?
