@@ -35,6 +35,13 @@ class Line:
         # Frame counter
         self.frame_cnt = 0
 
+
+class Lane:
+    def __init__(self):
+        self.bottom_width = 0
+        self.top_width = 0
+
+
 # FUNCTION DEFINITIONS
 
 
@@ -386,7 +393,7 @@ def check_fit(left_lane, right_lane):
 
     curve_diff_right = right_lane.radius_of_curvature - right_lane.average_curvature
     curve_diff_left = left_lane.radius_of_curvature - left_lane.average_curvature
-
+    curve_diff = abs(right_lane.radius_of_curvature - left_lane.radius_of_curvature)
     # Check if parameters are ok
     #print("left average: ", '%.6f' % left_lane.average_fit[0])
     #print("right average: ", '%.6f' % right_lane.average_fit[0])
@@ -394,12 +401,14 @@ def check_fit(left_lane, right_lane):
     #print("right current: ", '%.6f' % right_lane.current_fit[0])
     #print("left error: ", '%.6f' % coeff_diff_left)
     #print("right error: ", '%.6f' % coeff_diff_right)
-    print("left curve: ", '%.6f' % left_lane.radius_of_curvature)
-    print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
+    # print("left curve: ", '%.6f' % left_lane.radius_of_curvature)
+    # print("right curve: ", '%.6f' % right_lane.radius_of_curvature)
     if (left_lane.initialized is True) and (right_lane.initialized is True):
         if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            #print(left_lane.average_curvature, right_lane.average_curvature)
-            if abs(curve_diff_left) > left_lane.average_curvature or abs(curve_diff_right) > right_lane.average_curvature:
+            if abs(curve_diff_left) > 0.5 * left_lane.average_curvature or \
+                    abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
+                    curve_diff > 0.5 * left_lane.average_curvature or \
+                    curve_diff > 0.5 * right_lane.average_curvature:
                 result = False
             else:
                 result = True
@@ -416,7 +425,7 @@ def average_fits(img_shape, lane):
     # right_fit = .05 * right_fit + .95 * right_fit_prev ?
     # Calculates the average fit based on previous n values
     sum = 0
-    n = 15
+    n = 3
     average_fit = [0, 0, 0]
 
     # TODO: check if these can be done in the previous ifs
@@ -443,7 +452,7 @@ def average_fits(img_shape, lane):
 
 def average_curvature(img_shape, lane):
     sum = 0
-    n = 5
+    n = 7
     average_curve = 0
 
     if len(lane.previous_curves) < n:

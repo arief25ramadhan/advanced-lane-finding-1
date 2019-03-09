@@ -120,6 +120,11 @@ def find_lane_lines(img):
     right_lane.line_base_pos = right_fit[0] * (top_view.shape[0] - 1) ** 2 + right_fit[1] * (top_view.shape[0] - 1) + right_fit[2]
     lane_distance = right_lane.line_base_pos - left_lane.line_base_pos
 
+    # Calculate top and bottom position of lane lines for sanity check
+    lane = alf.Lane()
+    lane.top_width = right_fit[2] - left_fit[2]
+    lane.bottom_width = right_lane.line_base_pos - left_lane.line_base_pos
+
     # 5) Determine lane curvature and position of the vehicle
     # Calculate curvature
     left_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, left_fit)
@@ -133,7 +138,7 @@ def find_lane_lines(img):
 
     # Check if values make sense
     #if left_lane.detected and right_lane.detected is True:
-    if alf.check_fit(left_lane, right_lane) is False:
+    if alf.check_fit(left_lane, right_lane, lane) is False:
         # TODO: dont set previous fit if its the first frame
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
