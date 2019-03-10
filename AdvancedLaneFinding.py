@@ -161,7 +161,7 @@ def perspective_tr(img):
     img_size = (img.shape[1], img.shape[0])
 
     # Define source and destination points based on a straight road section
-    src_pts = np.float32([[635, 477], [698, 477], [220, 720], [1105, 720]])
+    src_pts = np.float32([[584, 460], [702, 460], [220, 720], [1105, 720]])
     dst_pts = np.float32([[300, 0], [900, 0], [300, 720], [900, 720]])
 
     # Calculate transform matrix and inverse transform matrix

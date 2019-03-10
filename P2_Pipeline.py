@@ -227,6 +227,6 @@ lane = alf.Lane()
 # TODO: set mode somewhere else?
 # TODO: turn sanity check ON/OFF
 # Set mode: mark_lanes OR debug
-mode = 'mark_lanes'
+mode = 'debug'
 # Test on image or video
 test_pipeline('video2')
