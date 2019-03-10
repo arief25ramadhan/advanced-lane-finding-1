@@ -161,7 +161,7 @@ def perspective_tr(img):
     img_size = (img.shape[1], img.shape[0])
 
     # Define source and destination points based on a straight road section
-    src_pts = np.float32([[595, 450], [688, 450], [220, 720], [1105, 720]])
+    src_pts = np.float32([[635, 477], [698, 477], [220, 720], [1105, 720]])
     dst_pts = np.float32([[300, 0], [900, 0], [300, 720], [900, 720]])
 
     # Calculate transform matrix and inverse transform matrix
@@ -402,15 +402,15 @@ def check_fit(left_lane, right_lane, lane):
     top_width_diff = abs(lane.top_width - lane.average_top_width)
     bottom_width_diff = abs(lane.bottom_width - lane.average_bottom_width)
 
-    width_check_top = top_width_diff > 0.5 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
+    width_check_top = top_width_diff > 0.1 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
     cross_check = lane.top_width < 0 or lane.bottom_width < 0
-    print("Average bottom: ", lane.average_bottom_width)
-    print("Average top: ", lane.average_top_width)
+    #print("Average bottom: ", lane.average_bottom_width)
+    #print("Average top: ", lane.average_top_width)
     #print("Previous bottom: ", lane.previous_bottom_widths)
     #print("Previous top: ", lane.previous_top_widths)
-    print("Current bottom: ", lane.bottom_width)
-    print("Current top: ", lane.top_width)
+    #print("Current bottom: ", lane.bottom_width)
+    #print("Current top: ", lane.top_width)
 
     # Check if parameters are ok
     if (left_lane.initialized is True) and (right_lane.initialized is True):
