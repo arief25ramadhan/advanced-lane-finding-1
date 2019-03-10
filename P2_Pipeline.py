@@ -106,6 +106,7 @@ def find_lane_lines(img):
             try:
                 left_fit, right_fit, lanes_colored = alf.sliding_windows(top_view)
             except TypeError:  # if nothing was found, use previous fit
+                print("nothing found")
                 left_fit = left_lane.previous_fit
                 right_fit = right_lane.previous_fit
                 lanes_colored = np.zeros_like(img)
@@ -145,6 +146,7 @@ def find_lane_lines(img):
         right_lane.current_fit = right_lane.previous_fit
         left_lane.detected = False
         right_lane.detected = False
+        print("fit nok")
 
     else:
         # If fit is good, use current values and indicate that lanes were found
@@ -156,6 +158,7 @@ def find_lane_lines(img):
         right_lane.initialized = True
         left_lane.frame_cnt += 1
         right_lane.frame_cnt += 1
+        print("fit ok")
 
 
     # Calculate the average of the recent fits and set this as the current fit
@@ -166,7 +169,6 @@ def find_lane_lines(img):
 
     #TODO: only add to average if fit is ok
     lane.average_bottom_width, lane.average_top_width = alf.average_width(top_view.shape, lane)
-
     # Set average value as current value
     #left_lane.current_fit = left_lane.average_fit
     #right_lane.current_fit = right_lane.average_fit

@@ -399,18 +399,18 @@ def check_fit(left_lane, right_lane, lane):
     curve_diff_left = left_lane.radius_of_curvature - left_lane.average_curvature
     curve_diff = abs(right_lane.radius_of_curvature - left_lane.radius_of_curvature)
 
-    top_width_diff = lane.top_width - lane.average_top_width
-    bottom_width_diff = lane.bottom_width - lane.average_bottom_width
+    top_width_diff = abs(lane.top_width - lane.average_top_width)
+    bottom_width_diff = abs(lane.bottom_width - lane.average_bottom_width)
 
-    width_check_top = top_width_diff > 0.05 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
+    width_check_top = top_width_diff > 0.5 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
     cross_check = lane.top_width < 0 or lane.bottom_width < 0
     print("Average bottom: ", lane.average_bottom_width)
-    #print("Average top: ", lane.average_top_width)
+    print("Average top: ", lane.average_top_width)
     #print("Previous bottom: ", lane.previous_bottom_widths)
     #print("Previous top: ", lane.previous_top_widths)
     print("Current bottom: ", lane.bottom_width)
-    #print("Current top: ", lane.top_width)
+    print("Current top: ", lane.top_width)
 
     # Check if parameters are ok
     if (left_lane.initialized is True) and (right_lane.initialized is True):
