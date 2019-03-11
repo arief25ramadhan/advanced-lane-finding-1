@@ -402,9 +402,10 @@ def check_fit(left_lane, right_lane, lane):
     top_width_diff = abs(lane.top_width - lane.average_top_width)
     bottom_width_diff = abs(lane.bottom_width - lane.average_bottom_width)
 
-    width_check_top = top_width_diff > 0.1 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
+    width_check_top = top_width_diff > 0.2 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
-    cross_check = lane.top_width < 0 or lane.bottom_width < 0
+    cross_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
+    curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < 0.0
     #print("Average bottom: ", lane.average_bottom_width)
     #print("Average top: ", lane.average_top_width)
     #print("Previous bottom: ", lane.previous_bottom_widths)
@@ -419,8 +420,15 @@ def check_fit(left_lane, right_lane, lane):
                     # abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
                     # curve_diff > 0.5 * left_lane.average_curvature or \
                     # curve_diff > 0.5 * right_lane.average_curvature or \
-            if width_check_bottom or width_check_top or cross_check:
+            if width_check_bottom:
                 result = False
+                print("bottom nok")
+            elif width_check_top:
+                result = False
+                print("top nok")
+            elif cross_check:
+                result = False
+                print("lines cross")
             else:
                 result = True
         else:
@@ -489,7 +497,7 @@ def average_curvature(img_shape, lane):
 def average_width(img_shape, lane):
     sum_bottom = 0
     sum_top = 0
-    n = 7
+    n = 3
     average_bottom_width = 0
     average_top_width = 0
 
