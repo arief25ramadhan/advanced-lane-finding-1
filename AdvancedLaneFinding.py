@@ -332,10 +332,12 @@ def search_around_poly(binary_warped, left_fit, right_fit):
 
 
 def measure_curvature_real(img_shape, fit):
+    # TODO: we shouldn't have to pass img_shape !!!
     # Calculates the curvature of polynomial functions in meters
     ym_per_pix = 30 / 720  # meters per pixel in y dimension
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
+    # TODO: get this out of here into helper function (?)
     # Generate y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
 
@@ -356,8 +358,7 @@ def measure_curvature_real(img_shape, fit):
 
 
 def get_position(img_shape, left_lane_pos, right_lane_pos):
-
-    ym_per_pix = 30 / 720  # meters per pixel in y dimension
+    # TODO: we shouldn't have to pass img_shape !!!
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
     # Calculate position based on midpoint - center of lanes distance
