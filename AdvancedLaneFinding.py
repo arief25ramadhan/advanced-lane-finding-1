@@ -58,6 +58,42 @@ def fit_poly(leftx, lefty, rightx, righty):
     return left_fit, right_fit
 
 
+def add_to_previous(curr_value, deque, n = 3):
+    # If we do not have enough fits, append the list with the current fit
+    if len(deque) < n:
+        deque.append(curr_value)
+    # If amount of fits == n, remove the last element and add the current one
+    if len(deque) == n:
+        deque.pop(n - 1)
+        deque.insert(0, curr_value)
+
+
+def average_values(deque, n = 3):
+    average_fit = [0, 0, 0]
+
+    # If we have enough fits, calculate the average
+    if type(deque[0]) is 'list':
+
+        if len(deque) > 0:
+            for i in range(0, 3):
+                total = 0
+                for num in range(0, len(deque)):
+
+                    total = total + deque[num][i]
+
+                average_fit[i] = total / len(deque)
+            return average_fit
+
+    else:
+        if len(deque) > 0:
+            for i in range(0, deque):
+                total = total + deque[i]
+
+            average = total / len(deque)
+            return average
+
+
+
 # FUNCTION DEFINITIONS
 
 
