@@ -357,7 +357,7 @@ def measure_curvature_real(img_shape, fit):
     return curvature
 
 
-def get_position(img_shape, left_lane_pos, right_lane_pos):
+def get_vehicle_position(img_shape, left_lane_pos, right_lane_pos):
     # TODO: we shouldn't have to pass img_shape !!!
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
