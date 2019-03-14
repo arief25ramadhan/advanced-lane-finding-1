@@ -58,6 +58,17 @@ def fit_poly(leftx, lefty, rightx, righty):
     return left_fit, right_fit
 
 
+def calc_x_values(img_shape, left_fit, right_fit):
+    # Generate y values for plotting
+    ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
+
+    # Calculate x values using polynomial coeffs
+    left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
+    right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
+
+    return left_fitx, right_fitx
+
+
 def add_to_previous(curr_value, deque, n = 3):
     # If we do not have enough fits, append the list with the current fit
     if len(deque) < n:
@@ -446,6 +457,7 @@ def sanity_check(left_lane, right_lane, lane):
 
 
 def average_fits(img_shape, lane):
+    # TODO: remove all average functions
     n = 3
     average_fit = [0, 0, 0]
 
@@ -570,14 +582,3 @@ def draw_lanes(warped, undist, left_fit, right_fit, curvature, position, Minv):
     cv2.putText(lanes, pos_text, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
 
     return lanes
-
-
-def calc_x_values(img_shape, left_fit, right_fit):
-    # Generate y values for plotting
-    ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
-
-    # Calculate x values using polynomial coeffs
-    left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
-    right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
-
-    return left_fitx, right_fitx
