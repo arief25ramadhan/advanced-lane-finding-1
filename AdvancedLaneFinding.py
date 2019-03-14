@@ -49,6 +49,15 @@ class Lane:
 # HELPER FUNCTIONS
 
 
+def fit_poly(leftx, lefty, rightx, righty):
+
+    # Fit a second order polynomial to each
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+
+    return left_fit, right_fit
+
+
 # FUNCTION DEFINITIONS
 
 
@@ -137,7 +146,6 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)
 def perspective_tr(img):
 
     # TODO: check for any unintended horizontal shift
-
     img_size = (img.shape[1], img.shape[0])
 
     # Define source and destination points based on a straight road section
@@ -150,15 +158,6 @@ def perspective_tr(img):
     transformed = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 
     return transformed, M, Minv
-
-
-def fit_poly(img_shape, leftx, lefty, rightx, righty):
-
-    # Fit a second order polynomial to each
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
-
-    return left_fit, right_fit
 
 
 def sliding_windows(img):
@@ -249,7 +248,7 @@ def sliding_windows(img):
     out_img[righty, rightx] = [0, 0, 255]
 
     # Fit polynomial based on pixels found
-    left_fit, right_fit = fit_poly(img.shape, leftx, lefty, rightx, righty)
+    left_fit, right_fit = fit_poly(leftx, lefty, rightx, righty)
 
     left_fit_text = "left: %.6f %.6f %.6f" % (left_fit[0], left_fit[1], left_fit[2])
     right_fit_text = "right: %.6f %.6f %.6f" % (right_fit[0], right_fit[1], right_fit[2])
@@ -290,7 +289,7 @@ def search_around_poly(binary_warped, left_fit, right_fit):
     ploty = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
 
     # Fit polynomial based on pixels found
-    left_fit, right_fit = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
+    left_fit, right_fit = fit_poly(leftx, lefty, rightx, righty)
 
     left_fitx, right_fitx = calc_x_values(binary_warped.shape, left_fit, right_fit)
 
