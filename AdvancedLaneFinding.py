@@ -408,7 +408,7 @@ def get_vehicle_position(img_shape, left_lane_pos, right_lane_pos):
     return real_position
 
 
-def check_fit(left_lane, right_lane, lane):
+def sanity_check(left_lane, right_lane, lane):
 
     # Calculate widths at top and bottom
     top_width_diff = abs(lane.top_width - lane.average_top_width)
@@ -442,19 +442,13 @@ def check_fit(left_lane, right_lane, lane):
     else:
         result = True
 
-    return True
+    return result
 
 
 def average_fits(img_shape, lane):
-    #TODO: make this more sophisticated:
-    # right_fit = .05 * right_fit + .95 * right_fit_prev ?
-    # Calculates the average fit based on previous n values
-    # TODO: set average as global var
-    sum = 0
     n = 3
     average_fit = [0, 0, 0]
 
-    # TODO: check if these can be done in the previous ifs
     # If we do not have enough fits, append the list with the current fit
     if len(lane.previous_fits) < n:
         lane.previous_fits.append(lane.current_fit)
@@ -464,14 +458,14 @@ def average_fits(img_shape, lane):
         lane.previous_fits.insert(0, lane.current_fit)
 
     # If we have enough fits, calculate the average
-    # TODO: sort these fors in some logical order...
-    if (len(lane.previous_fits) > 0):
+    if len(lane.previous_fits) > 0:
         for i in range(0, 3):
+            total = 0
             for num in range(0, len(lane.previous_fits)):
 
-                sum = sum + lane.previous_fits[num][i]
-                # TODO: divide by length instead, checking for zero division
-            average_fit[i] = sum / len(lane.previous_fits)
+                total = total + lane.previous_fits[num][i]
+
+            average_fit[i] = total / len(lane.previous_fits)
 
     return average_fit
 

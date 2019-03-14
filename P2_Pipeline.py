@@ -139,7 +139,7 @@ def find_lane_lines(img):
 
     # Check if values make sense
     #if left_lane.detected and right_lane.detected is True:
-    if alf.check_fit(left_lane, right_lane, lane) is False:
+    if alf.sanity_check(left_lane, right_lane, lane) is False:
         # TODO: dont set previous fit if its the first frame
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
@@ -229,4 +229,4 @@ lane = alf.Lane()
 # Set mode: mark_lanes OR debug
 mode = 'debug'
 # Test on image or video
-test_pipeline('video3')
+test_pipeline('video2')
