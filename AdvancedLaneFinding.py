@@ -373,58 +373,40 @@ def get_vehicle_position(img_shape, left_lane_pos, right_lane_pos):
 
 
 def check_fit(left_lane, right_lane, lane):
-    # Difference in average and current coefficients:
-    coeff_diff_right = np.sum((right_lane.current_fit[0] - right_lane.previous_fit[0])**2)
-    coeff_diff_right = np.sqrt(coeff_diff_right)
 
-    coeff_diff_left = np.sum((left_lane.current_fit[0] - left_lane.previous_fit[0]) ** 2)
-    coeff_diff_left = np.sqrt(coeff_diff_left)
-
-    curve_diff_right = right_lane.radius_of_curvature - right_lane.average_curvature
-    curve_diff_left = left_lane.radius_of_curvature - left_lane.average_curvature
-    curve_diff = abs(right_lane.radius_of_curvature - left_lane.radius_of_curvature)
-
+    # Calculate widths at top and bottom
     top_width_diff = abs(lane.top_width - lane.average_top_width)
     bottom_width_diff = abs(lane.bottom_width - lane.average_bottom_width)
 
+    # Define sanity checks
     width_check_top = top_width_diff > 0.2 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
-    cross_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
+    lane_intersect_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
     curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < -0.00005 * 0.0001
-    #print("Average bottom: ", lane.average_bottom_width)
-    #print("Average top: ", lane.average_top_width)
-    #print("Previous bottom: ", lane.previous_bottom_widths)
-    #print("Previous top: ", lane.previous_top_widths)
-    #print("Current bottom: ", lane.bottom_width)
-    #print("Current top: ", lane.top_width)
 
-    # Check if parameters are ok
-    if (left_lane.initialized is True) and (right_lane.initialized is True):
-        if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
-            # if abs(curve_diff_left) > 0.5 * left_lane.average_curvature or \
-                    # abs(curve_diff_right) > 0.5 * right_lane.average_curvature or \
-                    # curve_diff > 0.5 * left_lane.average_curvature or \
-                    # curve_diff > 0.5 * right_lane.average_curvature or \
-            if width_check_bottom:
-                result = False
-                print("bottom nok")
-            elif width_check_top:
-                result = False
-                print("top nok")
-            elif cross_check:
-                result = False
-                print("lines cross")
-            elif curve_check:
-                result = False
-                print("curves not ok")
-            else:
-                result = True
+    # Check if parameters are ok (skip for first frame)
+    # TODO: put frame_cnt condition in pipeline
+    if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
+
+        if width_check_bottom:
+            result = False
+
+        elif width_check_top:
+            result = False
+
+        elif lane_intersect_check:
+            result = False
+
+        elif curve_check:
+            result = False
+
         else:
             result = True
+
     else:
         result = True
 
-    return result
+    return True
 
 
 def average_fits(img_shape, lane):
