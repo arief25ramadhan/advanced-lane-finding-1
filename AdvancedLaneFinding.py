@@ -200,6 +200,7 @@ def sliding_windows(img):
 
     # Step through windows
     for window in range(nwindows):
+
         # Window boundaries:
         win_y_low = img.shape[0] - (window + 1) * window_height
         win_y_high = img.shape[0] - window * window_height
@@ -215,9 +216,9 @@ def sliding_windows(img):
                       (win_xright_high, win_y_high), (0, 255, 0), 2)
 
         # Identify pixels within the windows
-        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & \
+        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) &
                           (nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
-        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & \
+        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) &
                            (nonzerox >= win_xright_low) & (nonzerox < win_xright_high)).nonzero()[0]
 
         # Add the found pixels to lane line
@@ -230,7 +231,7 @@ def sliding_windows(img):
         if len(good_right_inds) > minpix:
             rightx_current = np.int(np.mean(nonzerox[good_right_inds]))
 
-        # Concatenate list of pixels
+    # Concatenate list of pixels
     try:
         left_lane_inds = np.concatenate(left_lane_inds)
         right_lane_inds = np.concatenate(right_lane_inds)
@@ -250,10 +251,12 @@ def sliding_windows(img):
     # Fit polynomial based on pixels found
     left_fit, right_fit = fit_poly(leftx, lefty, rightx, righty)
 
+    # TODO: don't return out_img this if we are not debugging
+    # For debugging
     left_fit_text = "left: %.6f %.6f %.6f" % (left_fit[0], left_fit[1], left_fit[2])
     right_fit_text = "right: %.6f %.6f %.6f" % (right_fit[0], right_fit[1], right_fit[2])
 
-    # Add text to image
+    # Add text to debugging image
     cv2.putText(out_img, left_fit_text, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
     cv2.putText(out_img, right_fit_text, (30, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 

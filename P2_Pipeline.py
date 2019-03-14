@@ -50,7 +50,7 @@ def image_pipeline():
         cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
 
 
-def video_pipeline(video, mode="long"):
+def video_pipeline(video, mode="short"):
     # APPLY PIPELINE ON VIDEO
 
     # Select input
@@ -227,6 +227,6 @@ lane = alf.Lane()
 # TODO: set mode somewhere else?
 # TODO: turn sanity check ON/OFF
 # Set mode: mark_lanes OR debug
-mode = 'mark_lanes'
+mode = 'debug'
 # Test on image or video
 test_pipeline('video2')
