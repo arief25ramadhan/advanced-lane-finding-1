@@ -46,6 +46,9 @@ class Lane:
         self.previous_top_widths = []
 
 
+# HELPER FUNCTIONS
+
+
 # FUNCTION DEFINITIONS
 
 
@@ -77,26 +80,11 @@ def camera_calibration(image_files, nx, ny):
 
 
 def undistort(img, mtx, dist):
-
     # Undistort image using camera matrix & distortion coefficients
     return cv2.undistort(img, mtx, dist)
 
 
 def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)):
-
-    # TODO : check other color spaces
-    # If you want to continue to explore additional color channels, I have seen that the L channel from LUV with lower
-    # and upper thresholds around 225 & 255 respectively works very well to pick out the white lines, even in the parts
-    # of the video with heavy shadows and brighter pavement. You can also try out the b channel from Lab which does a
-    # great job with the yellow lines (you can play around with thresholds around 155 & 200).
-
-    # TODO: color thresholding in all colorspaces
-    # You could try color thresholding in all RGB, HLS, HSV colorspaces to make the pipeline more robust. Color
-    # thresholding is also much faster to compute as opposed to the gradient calculation in the Sobel transform.
-
-    # Lab is another colorspace that should work well here, especially the "B" channel which should help identify the
-    # yellow lanes effectively.
-    # TODO: implement yellow AND white mask
 
     # Make a copy of the image
     img = np.copy(img)
@@ -117,40 +105,32 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)
     l_binary = np.zeros_like(l_channel)
     l_binary[(l_channel >= l_thresh[0]) & (l_channel <= l_thresh[1])] = 1
 
-    # Sobelx
+    # Find edges with Sobelx
     sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
     abs_sobelx = np.absolute(sobel_x)
     scaled_sobel = np.uint8(255 * abs_sobelx / np.max(abs_sobelx))
 
-    # Threshold x gradient
+    # Threshold edges (x gradient)
     sx_binary = np.zeros_like(scaled_sobel)
     sx_binary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
 
-    # Sobelx AND white
+    # Get white edges
     sobel_white_binary = np.zeros_like(l_channel)
     sobel_white_binary[(sx_binary == 1) & (l_binary == 1)] = 1
 
-    # Sobelx AND yellow
+    # Get yellow edges
     sobel_yellow_binary = np.zeros_like(l_channel)
     sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
 
+    # Output image for debugging
+    # TODO: don't return this if we are not debugging
     white_sobelx_and_color = np.dstack(
         (sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
 
-    # Combine sobelx-yellow and sobelx-white
+    # Output image for pipeline
     combined_binary_sobel = np.zeros_like(b_binary)
     combined_binary_sobel[(sobel_white_binary == 1) | (sobel_yellow_binary == 1)] = 1
 
-    # Stack channels (binary to colored image, L channel: blue, b channel: green)
-    color_binary = np.dstack((np.zeros_like(l_binary), b_binary, l_binary)) * 255
-
-    # Combine thresholds
-    combined_binary = np.zeros_like(b_binary)
-    combined_binary[(b_binary == 1) | (l_binary == 1)] = 1
-    combined_binary_out = np.dstack((combined_binary, combined_binary, combined_binary)) * 255
-
-    # return color_binary
-    # cv2.imwrite('output_images/02_thresholded.jpg', color_binary)
     return combined_binary_sobel, white_sobelx_and_color
 
 
@@ -405,7 +385,7 @@ def check_fit(left_lane, right_lane, lane):
     width_check_top = top_width_diff > 0.2 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
     cross_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
-    curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < 0.0
+    curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < -0.00005 * 0.0001
     #print("Average bottom: ", lane.average_bottom_width)
     #print("Average top: ", lane.average_top_width)
     #print("Previous bottom: ", lane.previous_bottom_widths)
@@ -429,6 +409,9 @@ def check_fit(left_lane, right_lane, lane):
             elif cross_check:
                 result = False
                 print("lines cross")
+            elif curve_check:
+                result = False
+                print("curves not ok")
             else:
                 result = True
         else:
