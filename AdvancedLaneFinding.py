@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import glob
 
 
 # LINE CLASS for storing values
@@ -104,11 +105,7 @@ def average_values(deque, n = 3):
             return average
 
 
-
-# FUNCTION DEFINITIONS
-
-
-def camera_calibration(image_files, nx, ny):
+def camera_calibration_helper(image_files, nx, ny):
     # Expects a list of image files
     # Prepare grid for object points
     objp = np.zeros((ny*nx, 3), np.float32)
@@ -133,6 +130,24 @@ def camera_calibration(image_files, nx, ny):
     # Get camera matrix and distortion coefficients
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
     return mtx, dist
+
+
+# FUNCTION DEFINITIONS
+
+
+def calibrate_camera():
+    # Set number of chessboard corners to find
+    nx = 9
+    ny = 6
+
+    print("calibrating camera...")
+
+    # Read in images
+    images = glob.glob('camera_cal/*.jpg')
+
+    # 0) Compute camera calibration matrix & distortion coefficients
+    cam_mtx, dist_coeffs = camera_calibration_helper(images, nx, ny)
+    return cam_mtx, dist_coeffs
 
 
 def undistort(img, mtx, dist):

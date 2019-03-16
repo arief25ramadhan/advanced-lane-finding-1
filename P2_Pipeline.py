@@ -1,84 +1,21 @@
 import numpy as np
 import cv2
-import glob
 import datetime
 import AdvancedLaneFinding as alf
 from moviepy.editor import VideoFileClip
 
-# STUFF FOR TESTING
 
+# CALIBRATE CAMERA
+cam_mtx, dist_coeffs = alf.calibrate_camera()
 
-def test_pipeline(mode):
-    # Select test mode
-    if mode is "image":
-        print("Testing on images")
-        image_pipeline()
-
-    elif mode is "video1":
-        print("Testing first project video")
-        video_pipeline(1)
-
-    elif mode is "video2":
-        print("Testing challenge video")
-        video_pipeline(2)
-
-    elif mode is "video3":
-        print("Testing extra hard challenge video. Good luck...")
-        video_pipeline(3)
-    else:
-        print("Error! Mode must be: image/video1/video2/video3")
-
-
-def image_pipeline():
-    # APPLY PIPELINE ON IMAGE
-
-    # Code snippet for optimizing for a parameter:
-    # for color_thr_max in range(0, 255, 25):
-        #test_image = cv2.imread('test_images/test4.jpg')
-        #result = find_lane_lines(test_image, (100, color_thr_max), (20, 100))
-        # Save output images
-        #output_fname = 'output_images/test_output_color_thr_100_'
-        #file_num = color_thr_max
-        #cv2.imwrite(output_fname + str(file_num) + '.jpg', result)
-
-
-    for num in range(3,4):
-        test_image = cv2.imread('test_images/test' + str(num) + '.jpg')
-        result = find_lane_lines(test_image)
-        # Save output images
-        output_fname_image = 'output_images/test_output'
-        cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
-
-
-def video_pipeline(video, mode="long"):
-    # APPLY PIPELINE ON VIDEO
-
-    # Select input
-    if video is 1:
-        filename = 'project_video'
-    elif video is 2:
-        filename = 'challenge_video'
-    elif video is 3:
-        filename = 'harder_challenge_video'
-
-    # Make only short subclip:
-    if mode is "long":
-        test_input = VideoFileClip(filename + '.mp4')
-    elif mode is "short":
-        test_input = VideoFileClip(filename + '.mp4').subclip(0, 3)
-
-    # Name ouput file
-    date = datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M")
-    output_fname_video = 'output_videos/output_' + filename + date +'.mp4'
-
-    # Process input video, write to output file
-    test_output = test_input.fl_image(find_lane_lines)
-    test_output.write_videofile(output_fname_video, audio=False)
+# CREATE LINE & LANE OBJECTS FOR USE IN PIPELINE
+left_lane = alf.Line()
+right_lane = alf.Line()
+lane = alf.Lane()
 
 
 # PIPELINE FOR ADVANCED LANE FINDING
-
-def find_lane_lines(img):
+def pipeline(img, mode='mark_lanes'):
 
     # 1) Apply distortion correction
     undistorted = alf.undistort(img, cam_mtx, dist_coeffs)
@@ -204,29 +141,59 @@ def find_lane_lines(img):
         return lanes_marked
 
 
-# CAMERA CALIBRATION
+# FUNCTIONS FOR TESTING
+def test_on_video(video, mode, length):
 
-# Set number of chessboard corners to find
-nx = 9
-ny = 6
+    if video is "image":
+        print("Testing on images")
+        process_images()
 
-print("calibrating camera...")
+    elif video is "video1":
+        print("Testing first project video")
+        process_video(1, mode, length)
 
-# Read in images
-images = glob.glob('camera_cal/*.jpg')
+    elif video is "video2":
+        print("Testing challenge video")
+        process_video(2, mode, length)
 
-# 0) Compute camera calibration matrix & distortion coefficients
-cam_mtx, dist_coeffs = alf.camera_calibration(images, nx, ny)
+    elif video is "video3":
+        print("Testing extra hard challenge video. Good luck...")
+        process_video(3, mode, length)
+    else:
+        print("Error! Mode must be: image/video1/video2/video3")
 
-# 1) Create line / lane objects
-left_lane = alf.Line()
-right_lane = alf.Line()
-lane = alf.Lane()
 
-# 2) Test pipeline
-# TODO: set mode somewhere else?
-# TODO: turn sanity check ON/OFF
-# Set mode: mark_lanes OR debug
-mode = 'debug'
-# Test on image or video
-test_pipeline('video2')
+def process_images():
+    # APPLY PIPELINE ON IMAGE
+    for num in range(0, 5):
+        test_image = cv2.imread('test_images/test' + str(num) + '.jpg')
+        result = pipeline(test_image)
+        # Save output images
+        output_fname_image = 'output_images/test_output'
+        cv2.imwrite(output_fname_image + str(num) + '.jpg', result)
+
+
+def process_video(video, mode='mark_lanes', length="long"):
+    # APPLY PIPELINE ON VIDEO
+
+    # Select input
+    if video is 1:
+        filename = 'project_video'
+    elif video is 2:
+        filename = 'challenge_video'
+    elif video is 3:
+        filename = 'harder_challenge_video'
+
+    # Make only short subclip:
+    if length is "long":
+        test_input = VideoFileClip(filename + '.mp4')
+    elif length is "short":
+        test_input = VideoFileClip(filename + '.mp4').subclip(0, 3)
+
+    # Name ouput file
+    date = datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M")
+    output_fname_video = 'output_videos/output_' + filename + date +'.mp4'
+
+    # Process input video, write to output file
+    test_output = test_input.fl_image(lambda inp_img: pipeline(inp_img, mode))
+    test_output.write_videofile(output_fname_video, audio=False)
