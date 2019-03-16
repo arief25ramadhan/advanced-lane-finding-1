@@ -27,12 +27,12 @@ def pipeline(img, mode='mark_lanes'):
     top_view, M, Minv = alf.perspective_tr(thresholded)
 
     # 4) Detect lane pixels and fit polynomial
-    # If previous lane was detected, search next to curve, otherwise use window method
+    # If previous lane was detected, search next to curve, otherwise use sliding window method
     if (left_lane.detected is False) or (right_lane.detected is False):
         try:
             left_fit, right_fit, lanes_colored = alf.sliding_windows(top_view)
-        except TypeError:       # if nothing was found, use previous fit
-            #print("Nothing found")
+        # if nothing was found, use previous fit
+        except TypeError:
             left_fit = left_lane.previous_fit
             right_fit = right_lane.previous_fit
             lanes_colored = np.zeros_like(img)
@@ -42,8 +42,8 @@ def pipeline(img, mode='mark_lanes'):
         except TypeError:
             try:
                 left_fit, right_fit, lanes_colored = alf.sliding_windows(top_view)
-            except TypeError:  # if nothing was found, use previous fit
-                #print("nothing found")
+            # if nothing was found, use previous fit
+            except TypeError:
                 left_fit = left_lane.previous_fit
                 right_fit = right_lane.previous_fit
                 lanes_colored = np.zeros_like(img)
@@ -51,73 +51,45 @@ def pipeline(img, mode='mark_lanes'):
     left_lane.current_fit = left_fit
     right_lane.current_fit = right_fit
 
-    # TODO: make img_shape a global constant?
-    # TODO: initialize left_fit, right_fit to some thing
-
     # Calculate base position of lane lines to get lane distance
     left_lane.line_base_pos = left_fit[0] * (top_view.shape[0] - 1) ** 2 + left_fit[1] * (top_view.shape[0] - 1) + left_fit[2]
     right_lane.line_base_pos = right_fit[0] * (top_view.shape[0] - 1) ** 2 + right_fit[1] * (top_view.shape[0] - 1) + right_fit[2]
-    lane_distance = right_lane.line_base_pos - left_lane.line_base_pos
 
     # Calculate top and bottom position of lane lines for sanity check
     lane.top_width = right_fit[2] - left_fit[2]
     lane.bottom_width = right_lane.line_base_pos - left_lane.line_base_pos
 
-    # 5) Determine lane curvature and position of the vehicle
-    # Calculate curvature
-    left_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, left_fit)
-    right_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, right_fit)
-
-    # Take the mean value of the two curvatures
-    curvature = left_lane.radius_of_curvature + right_lane.radius_of_curvature / 2
-
-    # Calculate vehicle position
-    vehicle_position = alf.get_vehicle_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
-
     # Check if values make sense
-    #if left_lane.detected and right_lane.detected is True:
     if alf.sanity_check(left_lane, right_lane, lane) is False:
-        # TODO: dont set previous fit if its the first frame
         # If fit is not good, use previous values and indicate that lanes were not found
         left_lane.current_fit = left_lane.previous_fit
         right_lane.current_fit = right_lane.previous_fit
         left_lane.detected = False
         right_lane.detected = False
-        #print("fit nok")
 
     else:
         # If fit is good, use current values and indicate that lanes were found
-        left_lane.current_fit = left_fit
-        right_lane.current_fit = right_fit
         left_lane.detected = True
         right_lane.detected = True
         left_lane.initialized = True
         right_lane.initialized = True
         left_lane.frame_cnt += 1
         right_lane.frame_cnt += 1
-        #print("fit ok")
-
 
     # Calculate the average of the recent fits and set this as the current fit
     left_lane.average_fit = alf.average_fits(top_view.shape, left_lane)
     right_lane.average_fit = alf.average_fits(top_view.shape, right_lane)
-    left_lane.average_curvature = alf.average_curvature(top_view.shape, left_lane)
-    right_lane.average_curvature = alf.average_curvature(top_view.shape, right_lane)
 
-    #TODO: only add to average if fit is ok
     lane.average_bottom_width, lane.average_top_width = alf.average_width(top_view.shape, lane)
-    # Set average value as current value
-    #left_lane.current_fit = left_lane.average_fit
-    #right_lane.current_fit = right_lane.average_fit
 
-    # Update all calculations based on averaged values
-    #curvature = alf.measure_curvature_real(top_view.shape, left_lane.current_fit, right_lane.current_fit)
-    #left_lane.radius_of_curvature = curvature
-    #right_lane.radius_of_curvature = curvature
+    # 5) Determine lane curvature and position of the vehicle
+    left_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, left_fit)
+    right_lane.radius_of_curvature = alf.measure_curvature_real(top_view.shape, right_fit)
+    curvature = left_lane.radius_of_curvature + right_lane.radius_of_curvature / 2
 
-    #left_lane.line_base_pos = average_left_fitx[top_view.shape[0]-1]
-    #right_lane.line_base_pos = average_right_fitx[top_view.shape[0]-1]
-    #vehicle_position = alf.get_position(undistorted.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
+    left_lane.line_base_pos = left_fit[0] * (top_view.shape[0] - 1) ** 2 + left_fit[1] * (top_view.shape[0] - 1) + left_fit[2]
+    right_lane.line_base_pos = right_fit[0] * (top_view.shape[0] - 1) ** 2 + right_fit[1] * (top_view.shape[0] - 1) + right_fit[2]
+    vehicle_position = alf.get_vehicle_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
     lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.average_fit, right_lane.average_fit, curvature,
@@ -159,8 +131,6 @@ def test_on_video(video, mode, length):
     elif video is "video3":
         print("Testing extra hard challenge video. Good luck...")
         process_video(3, mode, length)
-    else:
-        print("Error! Mode must be: image/video1/video2/video3")
 
 
 def process_images():
