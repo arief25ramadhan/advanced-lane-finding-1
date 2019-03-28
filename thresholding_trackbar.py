@@ -60,7 +60,7 @@ def nothing(x):
 
 
 # Read sample image and create window
-sample_img = cv2.imread('test_images/vlcsnap-2019-03-16-10h28m18s117.png')
+sample_img = cv2.imread('test_images/vlcsnap-2019-02-09-21h16m29s435.png')
 cv2.namedWindow('Set threshold values')
 cv2.namedWindow('Image')
 height, width = sample_img.shape[:2]
