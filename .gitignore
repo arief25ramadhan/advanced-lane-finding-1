@@ -3,9 +3,7 @@ output_images/
 __pycache__/
 archive_solution/
 examples/
-camera_cal/
 .idea/
-LICENSE
 notes/
 thresholding.py
 thresholding_playground.py
