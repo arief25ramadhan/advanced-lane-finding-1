@@ -23,8 +23,11 @@ def pipeline(img, mode='mark_lanes'):
     # 2) Use color transforms, gradients, etc., to create a thresholded binary image.
     thresholded, colored_thresholded = alf.threshold(undistorted)
 
+    # Mask region of interest
+    masked = alf.mask_region_of_interest(thresholded)
+
     # 3) Apply perspective transform
-    top_view, M, Minv = alf.perspective_tr(thresholded)
+    top_view, M, Minv = alf.perspective_tr(masked)
 
     # 4) Detect lane pixels and fit polynomial
     # If previous lane was detected, search next to curve, otherwise use sliding window method

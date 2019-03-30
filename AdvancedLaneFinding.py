@@ -205,6 +205,17 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)
     return combined_binary_sobel, white_sobelx_and_color
 
 
+def mask_region_of_interest(img):
+    mask = np.zeros_like(img)
+    unmasked_pixel_value = 1
+    # TODO: responsibility of setting vertices & similar parameters should be in pipeline
+    vertices = np.array([[(100, 720), (500, 450), (780, 450), (1180, 720)]], dtype=np.int32)
+
+    cv2.fillPoly(mask, vertices, unmasked_pixel_value)
+    masked_image = cv2.bitwise_and(img, mask)
+    return masked_image
+
+
 def perspective_tr(img):
 
     # TODO: check for any unintended horizontal shift
