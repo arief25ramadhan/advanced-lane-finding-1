@@ -109,8 +109,9 @@ def pipeline(img, mode='mark_lanes'):
     right_lane.current_fit = [np.array([False])]
 
     if mode is 'debug':
-        debug_top = np.concatenate((img[:, 0:1279:2, :], lanes_marked[:, 0:1279:2, :]), axis=1)
-        debug_bottom = np.concatenate((colored_thresholded[:, 0:1279:2, :], lanes_colored[:, 0:1279:2, :]), axis=1)
+        white_masked = np.dstack((masked, masked, masked)) * 255
+        debug_top = np.concatenate((lanes_marked[:, 0:1279:2, :], colored_thresholded[:, 0:1279:2, :]), axis=1)
+        debug_bottom = np.concatenate((white_masked[:, 0:1279:2, :], lanes_colored[:, 0:1279:2, :]), axis=1)
         debug = np.concatenate((debug_top[0:719:2], debug_bottom[0:719:2]), axis=0)
         return debug
 
