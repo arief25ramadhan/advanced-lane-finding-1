@@ -209,7 +209,7 @@ def mask_region_of_interest(img):
     mask = np.zeros_like(img)
     unmasked_pixel_value = 1
     # TODO: responsibility of setting vertices & similar parameters should be in pipeline
-    vertices = np.array([[(100, 720), (500, 450), (780, 450), (1180, 720)]], dtype=np.int32)
+    vertices = np.array([[(0, 720), (500, 450), (780, 450), (1280, 720)]], dtype=np.int32)
 
     cv2.fillPoly(mask, vertices, unmasked_pixel_value)
     masked_image = cv2.bitwise_and(img, mask)
