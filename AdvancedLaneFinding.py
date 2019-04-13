@@ -245,8 +245,8 @@ def sliding_windows(img):
     # TODO: In cases where no peaks are found, we place a window centered at the location calculated assuming
     # the location of previous window moved by a precomputed offset.
 
-    # Calculate histogram by summing bottom half of image
-    bottom_half = img[img.shape[0] // 2:, :]
+    # Calculate histogram by summing bottom quarter of image
+    bottom_half = img[img.shape[0] // 4:, :]
     histogram = np.sum(bottom_half, axis=0)
 
     # Output image for testing
