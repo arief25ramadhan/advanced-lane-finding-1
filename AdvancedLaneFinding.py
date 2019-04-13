@@ -155,7 +155,7 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist)
 
 
-def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)):
+def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
 
     # Make a copy of the image
     img = np.copy(img)
@@ -168,22 +168,30 @@ def threshold(img, l_thresh=(185, 255), b_thresh=(140, 200), sx_thresh=(10, 100)
     luv = cv2.cvtColor(img, cv2.COLOR_RGB2Luv)
     l_channel = luv[:, :, 0]
 
+    # Create percentile-based thresholds
+    l_thresh_min = np.percentile(l_channel, l_perc[0])
+    l_thresh_max = np.percentile(l_channel, l_perc[1])
+
     # Threshold b color channel
     b_binary = np.zeros_like(b_channel)
     b_binary[(b_channel >= b_thresh[0]) & (b_channel <= b_thresh[1])] = 1
 
     # Threshold l color channel
     l_binary = np.zeros_like(l_channel)
-    l_binary[(l_channel >= l_thresh[0]) & (l_channel <= l_thresh[1])] = 1
+    l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
 
     # Find edges with Sobelx
     sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
     abs_sobelx = np.absolute(sobel_x)
     scaled_sobel = np.uint8(255 * abs_sobelx / np.max(abs_sobelx))
 
+    # Create percentile-based thresholds
+    sx_thresh_min = np.percentile(scaled_sobel, sx_perc[0])
+    sx_thresh_max = np.percentile(scaled_sobel, sx_perc[1])
+
     # Threshold edges (x gradient)
     sx_binary = np.zeros_like(scaled_sobel)
-    sx_binary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
+    sx_binary[(scaled_sobel >= sx_thresh_min) & (scaled_sobel <= sx_thresh_max)] = 1
 
     # Get white edges
     sobel_white_binary = np.zeros_like(l_channel)
@@ -222,7 +230,7 @@ def perspective_tr(img):
     img_size = (img.shape[1], img.shape[0])
 
     # Define source and destination points based on a straight road section
-    src_pts = np.float32([[584, 460], [702, 460], [220, 720], [1105, 720]])
+    src_pts = np.float32([[556, 480], [734, 480], [220, 720], [1105, 720]])
     dst_pts = np.float32([[300, 0], [900, 0], [300, 720], [900, 720]])
 
     # Calculate transform matrix and inverse transform matrix
