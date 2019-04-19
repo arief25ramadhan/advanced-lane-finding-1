@@ -217,7 +217,7 @@ def mask_region_of_interest(img):
     mask = np.zeros_like(img)
     unmasked_pixel_value = 1
     # TODO: responsibility of setting vertices & similar parameters should be in pipeline
-    vertices = np.array([[(0, 720), (500, 450), (780, 450), (1280, 720)]], dtype=np.int32)
+    vertices = np.array([[(0, 720), (450, 450), (830, 450), (1280, 720)]], dtype=np.int32)
 
     cv2.fillPoly(mask, vertices, unmasked_pixel_value)
     masked_image = cv2.bitwise_and(img, mask)
@@ -347,7 +347,7 @@ def sliding_windows(img):
 def search_around_poly(binary_warped, left_fit, right_fit):
 
     # Margin for searching around curve
-    margin = 60
+    margin = 80
 
     # Grab activated pixels
     nonzero = binary_warped.nonzero()
