@@ -513,7 +513,7 @@ def sanity_check(left_lane, right_lane, lane):
 
 def average_fits(img_shape, lane):
     # TODO: remove all average functions
-    n = 3
+    n = 5
     average_fit = [0, 0, 0]
 
     # If we do not have enough fits, append the list with the current fit

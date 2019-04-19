@@ -67,15 +67,23 @@ def pipeline(img, mode='mark_lanes'):
         # If fit is not good, use previous values and indicate that lanes were not found
         # TODO: separate sanity checks for lines
         # TODO: extrapolate average instead
-        if len(left_lane.previous_fits) == 3:
+        if len(left_lane.previous_fits) == 5:
             diff_left = [0.0, 0.0, 0.0]
             diff_right = [0.0, 0.0, 0.0]
             for i in range(0, 3):
-                diff_left[i] = left_lane.previous_fits[2][i] - left_lane.previous_fits[1][i]
-                diff_right[i] = right_lane.previous_fits[2][i] - right_lane.previous_fits[1][i]
+                for j in range(0, 3):
+                    diff_left[i] += left_lane.previous_fits[j][i] - left_lane.previous_fits[j+1][i]
+                    diff_right[i] += right_lane.previous_fits[j][i] - right_lane.previous_fits[j+1][i]
+                diff_left[i] /= 4
+                diff_right[i] /= 4
             for i in range(0, 3):
-                left_lane.current_fit[i] = left_lane.previous_fit[i] + diff_left[i]
-                right_lane.current_fit[i] = right_lane.previous_fit[i] + diff_right[i]
+                left_lane.current_fit[i] += left_lane.previous_fit[i] + diff_left[i]
+                right_lane.current_fit[i] += right_lane.previous_fit[i] + diff_right[i]
+            print("prev: ", left_lane.previous_fit)
+            print("diff: ", diff_left)
+            print("fit: ", left_lane.current_fit)
+
+
             left_lane.detected = False
             right_lane.detected = False
         else:
@@ -86,6 +94,9 @@ def pipeline(img, mode='mark_lanes'):
 
     else:
         # If fit is good, use current values and indicate that lanes were found
+        if left_lane.detected == False or right_lane.detected == True:
+            left_lane.previous_fits.clear()
+            right_lane.previous_fits.clear()
         left_lane.detected = True
         right_lane.detected = True
         left_lane.initialized = True
