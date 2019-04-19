@@ -155,14 +155,16 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist)
 
 
+def color_to_binary(img, threshold):
+    output = np.zeros_like(img)
+    output[(img >= threshold[0]) & (img <= threshold[1])] = 1
+    return output
+
+
 def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
 
     # Make a copy of the image
     img = np.copy(img)
-
-    # Convert to Lab color space
-    lab = cv2.cvtColor(img, cv2.COLOR_RGB2Lab)
-    b_channel = lab[:, :, 2]
 
     # Convert to LUV color space
     luv = cv2.cvtColor(img, cv2.COLOR_RGB2Luv)
@@ -172,13 +174,36 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
     l_thresh_min = np.percentile(l_channel, l_perc[0])
     l_thresh_max = np.percentile(l_channel, l_perc[1])
 
-    # Threshold b color channel
-    b_binary = np.zeros_like(b_channel)
-    b_binary[(b_channel >= b_thresh[0]) & (b_channel <= b_thresh[1])] = 1
-
     # Threshold l color channel
     l_binary = np.zeros_like(l_channel)
     l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
+
+    # THRESHOLDS
+    bin_thresh = (20, 255)
+    hls_y_lower = (20, 120, 80)
+    hls_y_upper = (45, 200, 255)
+    rgb_y_lower = (225, 180, 0)
+    rgb_y_upper = (255, 255, 170)
+
+    # RGB yellow thresholding
+    rgb = img
+    rgb_mask = cv2.inRange(rgb, rgb_y_lower, rgb_y_upper)
+    rgb_yellow = cv2.bitwise_and(img, img, mask=rgb_mask).astype(np.uint8)
+    rgb_yellow = cv2.cvtColor(rgb_yellow, cv2.COLOR_RGB2GRAY)
+
+    rgb_yellow_binary = color_to_binary(rgb_yellow, bin_thresh)
+
+    # HLS yellow thresholding
+    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+    hls_mask = cv2.inRange(hls, hls_y_lower, hls_y_upper)
+    hls_yellow = cv2.bitwise_and(img, img, mask=hls_mask).astype(np.uint8)
+    hls_yellow = cv2.cvtColor(hls_yellow, cv2.COLOR_HLS2RGB)
+    hls_yellow = cv2.cvtColor(hls_yellow, cv2.COLOR_RGB2GRAY)
+
+    hls_yellow_binary = color_to_binary(hls_yellow, bin_thresh)
+
+    yellow_binary = np.zeros_like(hls_yellow_binary)
+    yellow_binary[(hls_yellow_binary == 1) & (rgb_yellow_binary == 1)] = 1
 
     # Find edges with Sobelx
     sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
@@ -197,20 +222,16 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
     sobel_white_binary = np.zeros_like(l_channel)
     sobel_white_binary[(sx_binary == 1) & (l_binary == 1)] = 1
 
-    # Get yellow edges
-    sobel_yellow_binary = np.zeros_like(l_channel)
-    sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
-
     # Output image for debugging
     # TODO: don't return this if we are not debugging
-    white_sobelx_and_color = np.dstack(
-        (sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
+    white_sobelx_and_yellow = np.dstack(
+        (sobel_white_binary, yellow_binary, np.zeros_like(sobel_white_binary))) * 255
 
     # Output image for pipeline
-    combined_binary_sobel = np.zeros_like(b_binary)
-    combined_binary_sobel[(sobel_white_binary == 1) | (sobel_yellow_binary == 1)] = 1
+    combined_binary_sobel = np.zeros_like(hls_yellow_binary)
+    combined_binary_sobel[(sobel_white_binary == 1) | (yellow_binary == 1)] = 1
 
-    return combined_binary_sobel, white_sobelx_and_color
+    return combined_binary_sobel, white_sobelx_and_yellow
 
 
 def mask_region_of_interest(img):
