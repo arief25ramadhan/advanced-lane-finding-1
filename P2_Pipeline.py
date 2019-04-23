@@ -74,11 +74,13 @@ def pipeline(img, mode='mark_lanes'):
                 for j in range(0, 3):
                     diff_left[i] += left_lane.previous_fits[j][i] - left_lane.previous_fits[j+1][i]
                     diff_right[i] += right_lane.previous_fits[j][i] - right_lane.previous_fits[j+1][i]
+
                 diff_left[i] /= 4
                 diff_right[i] /= 4
+
             for i in range(0, 3):
-                left_lane.current_fit[i] += left_lane.previous_fit[i] + diff_left[i]
-                right_lane.current_fit[i] += right_lane.previous_fit[i] + diff_right[i]
+                left_lane.current_fit[i] = left_lane.previous_fit[i] + diff_left[i]
+                right_lane.current_fit[i] = right_lane.previous_fit[i] + diff_right[i]
             print("prev: ", left_lane.previous_fit)
             print("diff: ", diff_left)
             print("fit: ", left_lane.current_fit)
@@ -94,7 +96,7 @@ def pipeline(img, mode='mark_lanes'):
 
     else:
         # If fit is good, use current values and indicate that lanes were found
-        if left_lane.detected == False or right_lane.detected == True:
+        if left_lane.detected == False or right_lane.detected == False:
             left_lane.previous_fits.clear()
             right_lane.previous_fits.clear()
         left_lane.detected = True
@@ -120,7 +122,7 @@ def pipeline(img, mode='mark_lanes'):
     vehicle_position = alf.get_vehicle_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
-    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.average_fit, right_lane.average_fit, curvature,
+    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fit, right_lane.current_fit, curvature,
                                   vehicle_position, Minv)
 
     # Set current values as previous values for next frame
