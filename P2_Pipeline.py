@@ -57,10 +57,13 @@ def pipeline(img, mode='mark_lanes'):
     # Calculate base position of lane lines to get lane distance
     left_lane.line_base_pos = left_fit[0] * (top_view.shape[0] - 1) ** 2 + left_fit[1] * (top_view.shape[0] - 1) + left_fit[2]
     right_lane.line_base_pos = right_fit[0] * (top_view.shape[0] - 1) ** 2 + right_fit[1] * (top_view.shape[0] - 1) + right_fit[2]
+    left_lane.line_mid_pos = left_fit[0] * (top_view.shape[0] // 2) ** 2 + left_fit[1] * (top_view.shape[0] // 2) + left_fit[2]
+    right_lane.line_mid_pos = right_fit[0] * (top_view.shape[0] // 2) ** 2 + right_fit[1] * (top_view.shape[0] // 2) + right_fit[2]
 
     # Calculate top and bottom position of lane lines for sanity check
     lane.top_width = right_fit[2] - left_fit[2]
     lane.bottom_width = right_lane.line_base_pos - left_lane.line_base_pos
+    lane.middle_width = right_lane.line_mid_pos - left_lane.line_mid_pos
 
     # Check if values make sense
     if alf.sanity_check(left_lane, right_lane, lane) is False:

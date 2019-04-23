@@ -21,8 +21,10 @@ class Line:
         self.previous_fit = np.array([0, 0, 0])
         # Radius of curvature
         self.radius_of_curvature = 1000
-        # Position of vehicle (dist from center)
+        # Position of vehicle
         self.line_base_pos = None
+        # Curve value at middle of image
+        self.line_mid_pos = None
         # Difference in coefficients
         self.diffs = np.array([0, 0, 0], dtype='float')
         # For first frame
@@ -41,6 +43,7 @@ class Lane:
     def __init__(self):
         self.bottom_width = 0
         self.top_width = 0
+        self.middle_width = 0
         self.average_bottom_width = 0
         self.average_top_width = 0
         self.previous_bottom_widths = []
@@ -483,7 +486,8 @@ def sanity_check(left_lane, right_lane, lane):
     # Define sanity checks
     width_check_top = top_width_diff > 0.2 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
-    lane_intersect_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
+    lane_intersect_check = lane.top_width < 0.0 or lane.bottom_width < 0.0 or lane.middle_width < 0.0
+    same_lane_check = lane.top_width == 0.0 or lane.bottom_width == 0.0 or lane.middle_width == 0.0
     curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < -0.00005 * 0.0001
 
     # Check if parameters are ok (skip for first frame)
@@ -491,15 +495,18 @@ def sanity_check(left_lane, right_lane, lane):
     if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
 
         if width_check_bottom:
-            result = False
+            result = True
 
         elif width_check_top:
-            result = False
+            result = True
 
         elif lane_intersect_check:
             result = False
 
         elif curve_check:
+            result = True
+
+        elif same_lane_check:
             result = False
 
         else:
