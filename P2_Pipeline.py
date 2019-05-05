@@ -125,7 +125,7 @@ def pipeline(img, mode='mark_lanes'):
     vehicle_position = alf.get_vehicle_position(top_view.shape[1], left_lane.line_base_pos, right_lane.line_base_pos)
 
     # 6) Output: warp lane boundaries back & display lane boundaries, curvature and position
-    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.current_fit, right_lane.current_fit, curvature,
+    lanes_marked = alf.draw_lanes(top_view, undistorted, left_lane.average_fit, right_lane.average_fit, curvature,
                                   vehicle_position, Minv)
 
     # Set current values as previous values for next frame
