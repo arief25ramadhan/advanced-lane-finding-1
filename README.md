@@ -145,7 +145,7 @@ Using the functions in *AdvancedLaneFinding.py* to build a pipeline in *P2_pipel
 
 Link to my project video:
 
-https://youtu.be/Vt2YAptB-LY
+https://youtu.be/1CxWpKNqWIs
 
 ---
 
