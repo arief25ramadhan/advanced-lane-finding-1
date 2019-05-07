@@ -21,10 +21,8 @@ class Line:
         self.previous_fit = np.array([0, 0, 0])
         # Radius of curvature
         self.radius_of_curvature = 1000
-        # Position of vehicle
+        # Position of vehicle (dist from center)
         self.line_base_pos = None
-        # Curve value at middle of image
-        self.line_mid_pos = None
         # Difference in coefficients
         self.diffs = np.array([0, 0, 0], dtype='float')
         # For first frame
@@ -43,7 +41,6 @@ class Lane:
     def __init__(self):
         self.bottom_width = 0
         self.top_width = 0
-        self.middle_width = 0
         self.average_bottom_width = 0
         self.average_top_width = 0
         self.previous_bottom_widths = []
@@ -158,16 +155,14 @@ def undistort(img, mtx, dist):
     return cv2.undistort(img, mtx, dist)
 
 
-def color_to_binary(img, threshold):
-    output = np.zeros_like(img)
-    output[(img >= threshold[0]) & (img <= threshold[1])] = 1
-    return output
-
-
 def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
 
     # Make a copy of the image
     img = np.copy(img)
+
+    # Convert to Lab color space
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2Lab)
+    b_channel = lab[:, :, 2]
 
     # Convert to LUV color space
     luv = cv2.cvtColor(img, cv2.COLOR_RGB2Luv)
@@ -177,36 +172,13 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
     l_thresh_min = np.percentile(l_channel, l_perc[0])
     l_thresh_max = np.percentile(l_channel, l_perc[1])
 
+    # Threshold b color channel
+    b_binary = np.zeros_like(b_channel)
+    b_binary[(b_channel >= b_thresh[0]) & (b_channel <= b_thresh[1])] = 1
+
     # Threshold l color channel
     l_binary = np.zeros_like(l_channel)
     l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
-
-    # THRESHOLDS
-    bin_thresh = (20, 255)
-    hls_y_lower = (20, 120, 80)
-    hls_y_upper = (45, 200, 255)
-    rgb_y_lower = (225, 180, 0)
-    rgb_y_upper = (255, 255, 170)
-
-    # RGB yellow thresholding
-    rgb = img
-    rgb_mask = cv2.inRange(rgb, rgb_y_lower, rgb_y_upper)
-    rgb_yellow = cv2.bitwise_and(img, img, mask=rgb_mask).astype(np.uint8)
-    rgb_yellow = cv2.cvtColor(rgb_yellow, cv2.COLOR_RGB2GRAY)
-
-    rgb_yellow_binary = color_to_binary(rgb_yellow, bin_thresh)
-
-    # HLS yellow thresholding
-    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
-    hls_mask = cv2.inRange(hls, hls_y_lower, hls_y_upper)
-    hls_yellow = cv2.bitwise_and(img, img, mask=hls_mask).astype(np.uint8)
-    hls_yellow = cv2.cvtColor(hls_yellow, cv2.COLOR_HLS2RGB)
-    hls_yellow = cv2.cvtColor(hls_yellow, cv2.COLOR_RGB2GRAY)
-
-    hls_yellow_binary = color_to_binary(hls_yellow, bin_thresh)
-
-    yellow_binary = np.zeros_like(hls_yellow_binary)
-    yellow_binary[(hls_yellow_binary == 1) & (rgb_yellow_binary == 1)] = 1
 
     # Find edges with Sobelx
     sobel_x = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)
@@ -225,23 +197,27 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
     sobel_white_binary = np.zeros_like(l_channel)
     sobel_white_binary[(sx_binary == 1) & (l_binary == 1)] = 1
 
+    # Get yellow edges
+    sobel_yellow_binary = np.zeros_like(l_channel)
+    sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
+
     # Output image for debugging
     # TODO: don't return this if we are not debugging
-    white_sobelx_and_yellow = np.dstack(
-        (sobel_white_binary, yellow_binary, np.zeros_like(sobel_white_binary))) * 255
+    white_sobelx_and_color = np.dstack(
+        (sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
 
     # Output image for pipeline
-    combined_binary_sobel = np.zeros_like(hls_yellow_binary)
-    combined_binary_sobel[(sobel_white_binary == 1) | (yellow_binary == 1)] = 1
+    combined_binary_sobel = np.zeros_like(b_binary)
+    combined_binary_sobel[(sobel_white_binary == 1) | (sobel_yellow_binary == 1)] = 1
 
-    return combined_binary_sobel, white_sobelx_and_yellow
+    return combined_binary_sobel, white_sobelx_and_color
 
 
 def mask_region_of_interest(img):
     mask = np.zeros_like(img)
     unmasked_pixel_value = 1
     # TODO: responsibility of setting vertices & similar parameters should be in pipeline
-    vertices = np.array([[(0, 720), (450, 450), (830, 450), (1280, 720)]], dtype=np.int32)
+    vertices = np.array([[(0, 720), (500, 450), (780, 450), (1280, 720)]], dtype=np.int32)
 
     cv2.fillPoly(mask, vertices, unmasked_pixel_value)
     masked_image = cv2.bitwise_and(img, mask)
@@ -269,8 +245,8 @@ def sliding_windows(img):
     # TODO: In cases where no peaks are found, we place a window centered at the location calculated assuming
     # the location of previous window moved by a precomputed offset.
 
-    # Calculate histogram by summing bottom quarter of image
-    bottom_half = img[img.shape[0] // 4:, :]
+    # Calculate histogram by summing bottom half of image
+    bottom_half = img[img.shape[0] // 2:, :]
     histogram = np.sum(bottom_half, axis=0)
 
     # Output image for testing
@@ -371,7 +347,7 @@ def sliding_windows(img):
 def search_around_poly(binary_warped, left_fit, right_fit):
 
     # Margin for searching around curve
-    margin = 80
+    margin = 60
 
     # Grab activated pixels
     nonzero = binary_warped.nonzero()
@@ -486,8 +462,7 @@ def sanity_check(left_lane, right_lane, lane):
     # Define sanity checks
     width_check_top = top_width_diff > 0.2 * lane.average_top_width or lane.top_width > 1.25 * lane.bottom_width
     width_check_bottom = bottom_width_diff > 0.05 * lane.average_bottom_width
-    lane_intersect_check = lane.top_width < 0.0 or lane.bottom_width < 0.0 or lane.middle_width < 0.0
-    same_lane_check = lane.top_width == 0.0 or lane.bottom_width == 0.0 or lane.middle_width == 0.0
+    lane_intersect_check = lane.top_width < 0.0 or lane.bottom_width < 0.0
     curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < -0.00005 * 0.0001
 
     # Check if parameters are ok (skip for first frame)
@@ -495,18 +470,15 @@ def sanity_check(left_lane, right_lane, lane):
     if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
 
         if width_check_bottom:
-            result = True
+            result = False
 
         elif width_check_top:
-            result = True
+            result = False
 
         elif lane_intersect_check:
             result = False
 
         elif curve_check:
-            result = True
-
-        elif same_lane_check:
             result = False
 
         else:
@@ -520,7 +492,7 @@ def sanity_check(left_lane, right_lane, lane):
 
 def average_fits(img_shape, lane):
     # TODO: remove all average functions
-    n = 7
+    n = 3
     average_fit = [0, 0, 0]
 
     # If we do not have enough fits, append the list with the current fit
