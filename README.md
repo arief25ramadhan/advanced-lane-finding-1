@@ -51,7 +51,7 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 Each step of the pipeline is described here and an example is provided using the following image as input for the pipeline:
 
-<img src="./test_images/test3.jpg" alt="Input road image" width="200"/>
+<img src="./test_images/test3.jpg" alt="Input road image" width="500"/>
 
 #### 1. Distortion correction
 
