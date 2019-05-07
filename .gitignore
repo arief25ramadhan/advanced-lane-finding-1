@@ -2,7 +2,6 @@ output_videos/
 output_images/
 __pycache__/
 archive_solution/
-examples/
 .idea/
 notes/
 thresholding.py
