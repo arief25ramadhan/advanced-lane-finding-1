@@ -18,16 +18,6 @@ The goals / steps of this project were the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-[//]: # (Image References)
-
-[image1]: ./test_images/test3.jpg "Input road image"
-[image2]: ./examples/01_undistorted.jpg "Undistorted"
-[image3]: ./examples/02_thresholded.jpg "Binary Example"
-[image4]: ./examples/03_top_view.jpg "Warp Example"
-[image5]: ./examples/04_lanes_colored.jpg "Fit Visual"
-[image6]: ./examples/test_output3.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
-
 My solution consists of two files:
 
 * *P2_pipeline.py* contains the pipeline for image/video processing, and
@@ -57,7 +47,7 @@ Each step of the pipeline is described here and an example is provided using the
 
 Using the camera matrix and distortion coefficients calculated in the camera calibration step, the pipeline undistorts each image using the `cv2.undistort()` function. This was implemented in the `undistort()` function in lines #32-56 of *AdvancedLaneFinding.py*. Applying the distortion correction function to the test image gives the following result: 
 
-![alt text][image2]
+<img src="./examples/01_undistorted.jpg" alt="Undistorted image" width="500"/>
 
 #### 2. Threshold using color transforms and gradients
 
@@ -67,7 +57,7 @@ I used a combination of HLS-space color thresholds and x-gradient thresholds to 
 
 Applying the `threshold()` function to the undistorted image, we get the following result (binary image):
 
-![alt text][image3]
+<img src="./examples/02_thresholded.jpg" alt="Thresholded binary" width="500"/>
 
 #### 3. Perspective transform
 
@@ -86,7 +76,7 @@ I chose the following source and destination points using a frame with a straigh
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image:
 
-![alt text][image4]
+<img src="./examples/03_top_view.jpg" alt="Warped image" width="500"/>
 
 #### 4. Lane pixel detection & curve fitting
 
@@ -105,7 +95,7 @@ The detected curve fits where stored using the Line() class, which is described 
 
 A visualization of the sliding window method is visible below:
 
-![alt text][image5]
+<img src="./examples/04_lanes_colored.jpg" alt="Sliding window method" width="500"/>
 
 #### 5. Calculation of lane curvature & vehicle position
 
@@ -127,7 +117,7 @@ Th function `draw_lanes()` (lines #371-402 of *AdvancedLaneFinding.py*) takes th
 
 The output for our example can be seen below:
 
-![alt text][image6]
+<img src="./examples/test_output3.jpg" alt="Output image" width="500"/>
 
 ---
 
