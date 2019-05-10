@@ -3,6 +3,9 @@
 ### Project #2 for Udacity Self-Driving Car Nanodegree
 
 #### By Adam Gyarmati
+
+![](examples/challenge_video.gif)
+
 ---
 
 ### Overview: Advanced Lane Finding Project
