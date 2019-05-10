@@ -2,9 +2,7 @@ import cv2
 import numpy as np
 
 
-def threshold(inp_image, mode="hls_sobelx", thresh1=(100, 255), thresh2=(25, 30), thresh3=(25, 30), thresh4=(25, 30), thresh5=(20, 100)):
-    # TODO: cleanup code, add select mode function
-    # check out https://chatbotslife.com/robust-lane-finding-using-advanced-computer-vision-techniques-46875bb3c8aa
+def threshold(inp_image, thresh1=(100, 255), thresh2=(25, 30), thresh3=(25, 30), thresh4=(25, 30), thresh5=(20, 100)):
 
     # Make a copy of the image
     img = np.copy(inp_image)
