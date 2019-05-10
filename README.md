@@ -1,4 +1,4 @@
-﻿# Advanced Lane Line Finding
+# Advanced Lane Line Finding
 
 ### Project #2 for Udacity Self-Driving Car Nanodegree
 
@@ -21,10 +21,11 @@ The goals / steps of this project were the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-My solution consists of two files:
+My solution consists of three files:
 
-* *P2_pipeline.py* contains the pipeline for image/video processing, and
-* *AdvancedLaneFinding.py* contains the class and function definitions.
+* *P2_pipeline.py* contains the pipeline for image/video processing
+* *AdvancedLaneFinding.py* contains the class and function definitions for the pipeline and for image/video processing
+* *test.py* runs image/video processing based on input parameters
 
 I imported *AdvancedLaneFinding.py* as *alf* in the pipeline to access the defined functions.
 
@@ -136,16 +137,23 @@ For this I defined a class called `Line` (lines #7-26 of *AdvancedLaneFinding.py
 
 Using the functions in *AdvancedLaneFinding.py* to build a pipeline in *P2_pipeline.py*, I got the following video as output:
 
-Link to my project video:
+Link to the output videos:
 
+Track 1:
 https://youtu.be/1CxWpKNqWIs
+
+Track 2:
+https://youtu.be/ishvYAyKT7E
 
 ---
 
 ### Discussion
 
-The main problem I faced during the project was to eliminate false detection of lane pixels cause by shadows / nearby lines on the road and resulting faulty curves. This was quite difficult because thresholding wasn't enough to get good lane lines, it was also necessary to use some "rules" that eliminated curves with wrong values.
+After completing the Term 1 of the Self-Driving Car Nanodegree, I took some time to revisit this project and tried to improve it as much as I could. When I submitted the project orignally, it only worked on the first track, but after some adjustments I managed to improve the lane detection so that it worked on the challenge video.
 
-I'm pretty sure that there is a lot to improve on my pipeline in terms of handling wrong curves, but it worked well in the end for the basic project video.
+When testing on the hardest challenge video (with very different light conditions and sometimes non-visible lane marks), I got stuck for months trying to get it to work. Unfortunately my experience was that no matter how good the perception was, there was always a rule that had to be set up to eliminate falsely detected curves.
 
-Regarding the code itself, I still have to make a lot of adjustments to make it work for the challenge video. Since there isn't any exception handling, the pipeline fails if the first frame already has a wrong curve and it throws an error after finding no previous values.
+As a summary I learned the following from this project:
+- the method used is fairly simple and works well on straight / slightly curvy roads with good lane visibility
+- making it work for harsher environments requires LOTS of rules and simply isn't feasible
+- because of this, in my opinion neural network approaches are far superior :)
