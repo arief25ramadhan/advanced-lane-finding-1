@@ -149,7 +149,7 @@ https://youtu.be/ishvYAyKT7E
 
 ### Discussion
 
-After completing the Term 1 of the Self-Driving Car Nanodegree, I took some time to revisit this project and tried to improve it as much as I could. When I submitted the project orignally, it only worked on the first track, but after some adjustments I managed to improve the lane detection so that it worked on the challenge video.
+After completing the Term 1 of the Self-Driving Car Nanodegree, I took some time to revisit this project and tried to improve it as much as I could. When I submitted the project originally, it only worked on the first track, but after some adjustments I managed to improve the lane detection so that it worked on the challenge video.
 
 When testing on the hardest challenge video (with very different light conditions and sometimes non-visible lane marks), I got stuck for months trying to get it to work. Unfortunately my experience was that no matter how good the perception was, there was always a rule that had to be set up to eliminate falsely detected curves.
 
