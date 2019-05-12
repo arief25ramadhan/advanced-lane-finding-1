@@ -68,8 +68,6 @@ def pipeline(img, mode='mark_lanes'):
     # Check if values make sense
     if alf.sanity_check(left_lane, right_lane, lane) is False:
         # If fit is not good, use previous values and indicate that lanes were not found
-        # TODO: separate sanity checks for lines
-        # TODO: extrapolate average instead
         if len(left_lane.previous_fits) == 5:
             diff_left = [0.0, 0.0, 0.0]
             diff_right = [0.0, 0.0, 0.0]
@@ -169,7 +167,6 @@ def test_on_video(video, mode, length):
 
 def process_images():
     # APPLY PIPELINE ON IMAGE
-    #TODO: check if this works (BGR/RGB issues)
     for num in range(0, 5):
         test_image = cv2.imread('test_images/test' + str(num) + '.jpg')
         result = pipeline(test_image)

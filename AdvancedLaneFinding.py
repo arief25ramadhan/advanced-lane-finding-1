@@ -202,7 +202,6 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
     sobel_yellow_binary[(sx_binary == 1) & (b_binary == 1)] = 1
 
     # Output image for debugging
-    # TODO: don't return this if we are not debugging
     white_sobelx_and_color = np.dstack(
         (sobel_white_binary, sobel_yellow_binary, np.zeros_like(sobel_white_binary))) * 255
 
@@ -216,7 +215,6 @@ def threshold(img, l_perc=(80, 100), b_thresh=(140, 200), sx_perc=(90, 100)):
 def mask_region_of_interest(img):
     mask = np.zeros_like(img)
     unmasked_pixel_value = 1
-    # TODO: responsibility of setting vertices & similar parameters should be in pipeline
     vertices = np.array([[(0, 720), (500, 450), (780, 450), (1280, 720)]], dtype=np.int32)
 
     cv2.fillPoly(mask, vertices, unmasked_pixel_value)
@@ -226,7 +224,6 @@ def mask_region_of_interest(img):
 
 def perspective_tr(img):
 
-    # TODO: check for any unintended horizontal shift
     img_size = (img.shape[1], img.shape[0])
 
     # Define source and destination points based on a straight road section
@@ -242,8 +239,6 @@ def perspective_tr(img):
 
 
 def sliding_windows(img):
-    # TODO: In cases where no peaks are found, we place a window centered at the location calculated assuming
-    # the location of previous window moved by a precomputed offset.
 
     # Calculate histogram by summing bottom half of image
     bottom_half = img[img.shape[0] // 2:, :]
@@ -332,7 +327,6 @@ def sliding_windows(img):
     # Fit polynomial based on pixels found
     left_fit, right_fit = fit_poly(leftx, lefty, rightx, righty)
 
-    # TODO: don't return out_img this if we are not debugging
     # For debugging
     left_fit_text = "left: %.6f %.6f %.6f" % (left_fit[0], left_fit[1], left_fit[2])
     right_fit_text = "right: %.6f %.6f %.6f" % (right_fit[0], right_fit[1], right_fit[2])
@@ -400,7 +394,6 @@ def search_around_poly(binary_warped, left_fit, right_fit):
     cv2.fillPoly(window_img, np.int_([right_line_pts]), (0, 255, 0))
     out_img = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-    # TODO: don't return out_img this if we are not debugging
     # For debugging
     left_fit_text = "left: %.6f %.6f %.6f" % (left_fit[0], left_fit[1], left_fit[2])
     right_fit_text = "right: %.6f %.6f %.6f" % (right_fit[0], right_fit[1], right_fit[2])
@@ -413,12 +406,10 @@ def search_around_poly(binary_warped, left_fit, right_fit):
 
 
 def measure_curvature_real(img_shape, fit):
-    # TODO: we shouldn't have to pass img_shape !!!
     # Calculates the curvature of polynomial functions in meters
     ym_per_pix = 30 / 720  # meters per pixel in y dimension
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
-    # TODO: get this out of here into helper function (?)
     # Generate y values for plotting
     ploty = np.linspace(0, img_shape[0] - 1, img_shape[0])
 
@@ -439,7 +430,6 @@ def measure_curvature_real(img_shape, fit):
 
 
 def get_vehicle_position(img_shape, left_lane_pos, right_lane_pos):
-    # TODO: we shouldn't have to pass img_shape !!!
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
     # Calculate position based on midpoint - center of lanes distance
@@ -466,7 +456,6 @@ def sanity_check(left_lane, right_lane, lane):
     curve_check = right_lane.current_fit[0] * left_lane.current_fit[0] < -0.00005 * 0.0001
 
     # Check if parameters are ok (skip for first frame)
-    # TODO: put frame_cnt condition in pipeline
     if (left_lane.frame_cnt > 1) and (right_lane.frame_cnt > 1):
 
         if width_check_bottom:
@@ -491,7 +480,6 @@ def sanity_check(left_lane, right_lane, lane):
 
 
 def average_fits(img_shape, lane):
-    # TODO: remove all average functions
     n = 3
     average_fit = [0, 0, 0]
 
@@ -529,12 +517,11 @@ def average_curvature(img_shape, lane):
         lane.previous_curves.insert(0, lane.radius_of_curvature)
 
     # If we have enough fits, calculate the average
-    # TODO: sort these fors in some logical order...
     if (len(lane.previous_curves) > 0):
         for i in range(0, len(lane.previous_curves)):
 
             sum = sum + lane.previous_curves[i]
-                # TODO: divide by length instead, checking for zero division
+
         average_curve = sum / len(lane.previous_curves)
 
     return average_curve
@@ -555,7 +542,6 @@ def average_width(img_shape, lane):
         lane.previous_bottom_widths.insert(0, lane.bottom_width)
 
     # If we have enough fits, calculate the average
-    # TODO: sort these fors in some logical order...
     if (len(lane.previous_bottom_widths) > 0):
         for i in range(0, len(lane.previous_bottom_widths)):
 
@@ -571,7 +557,6 @@ def average_width(img_shape, lane):
         lane.previous_top_widths.insert(0, lane.top_width)
 
     # If we have enough fits, calculate the average
-    # TODO: sort these fors in some logical order...
     if (len(lane.previous_top_widths) > 0):
         for i in range(0, len(lane.previous_top_widths)):
 
