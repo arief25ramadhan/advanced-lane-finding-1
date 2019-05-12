@@ -35,7 +35,7 @@ Each step of the image/video processing pipeline is detailed below.
 
 #### The goal here is to calculate the camera matrix and distortion coefficients. An example of a distortion corrected calibration image is provided below.
 
-The function used for this step can be found in the *AdvancedLaneFinding.py* file at lines #32-56. 
+The function used for this step can be found in the *AdvancedLaneFinding.py* file. 
 
 I start by preparing "object points", which are the (x, y, z) coordinates of the chessboard corners in the real world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
@@ -49,13 +49,13 @@ Each step of the pipeline is described here and an example is provided using the
 
 #### 1. Distortion correction
 
-Using the camera matrix and distortion coefficients calculated in the camera calibration step, the pipeline undistorts each image using the `cv2.undistort()` function. This was implemented in the `undistort()` function in lines #32-56 of *AdvancedLaneFinding.py*. Applying the distortion correction function to the test image gives the following result: 
+Using the camera matrix and distortion coefficients calculated in the camera calibration step, the pipeline undistorts each image using the `cv2.undistort()` function. This was implemented in the `undistort()` function in *AdvancedLaneFinding.py*. Applying the distortion correction function to the test image gives the following result: 
 
 <img src="./examples/01_undistorted.jpg" alt="Undistorted image" width="500"/>
 
 #### 2. Threshold using color transforms and gradients
 
-I used a combination of HLS-space color thresholds and x-gradient thresholds to generate a binary image (thresholding steps in `threshold()` function at lines #64-97 of *AdvancedLaneFinding.py*). The S-channel was used for the color threshold.
+I used a combination of HLS-space color thresholds and x-gradient thresholds to generate a binary image (thresholding steps in `threshold()` function of *AdvancedLaneFinding.py*). The S-channel was used for the color threshold.
 
 *Note: The threshold values largely affect the pipeline, so they must be optimized to get good results. My experience was that some thresholds that give good results on certain test images will not work well with others. In the end I ended up lowering the thresholds to make lane pixel detection more robust.*
 
@@ -67,7 +67,7 @@ Applying the `threshold()` function to the undistorted image, we get the followi
 
 A perspective transform is useful to detect the lane pixels and especially to fit curves on them. The transform warps the road image into a "birds-eye view", as if we were looking down on the road from above.
 
-The transform was implemented in the `perspective_tr()` function (lines #100-113 of *AdvancedLaneFinding.py*). The heart of this function is the `cv2.getPerspectiveTransform()` function which calculates the transform matrix based on given source and destination points. I also calculated the inverse matrix here, which is useful later when we warp the curves back onto the output image.
+The transform was implemented in the `perspective_tr()` function (in *AdvancedLaneFinding.py*). The heart of this function is the `cv2.getPerspectiveTransform()` function which calculates the transform matrix based on given source and destination points. I also calculated the inverse matrix here, which is useful later when we warp the curves back onto the output image.
 
 I chose the following source and destination points using a frame with a straight road section:
 
@@ -89,11 +89,11 @@ I detected lane pixels using two methods:
 * scanning the image with "sliding windows"
 * using previous fits to search near the already detected lane
 
-The "sliding window" method uses a histogram of the lower half of the image to start the scan, and proceeds upward through the image based on where it finds a given amount of pixels. The method is implemented in the `sliding_windows()` function in lines #132-220 of *AdvancedLaneFinding.py*
+The "sliding window" method uses a histogram of the lower half of the image to start the scan, and proceeds upward through the image based on where it finds a given amount of pixels. The method is implemented in the `sliding_windows()` function in *AdvancedLaneFinding.py*
 
-After lane pixels are detected, a second degree polynomial is fit to the points using the function `fitpoly()` (lines #116-129 of *AdvancedLaneFinding.py*), which uses the `polyfit()` function from the *NumPy* library.
+After lane pixels are detected, a second degree polynomial is fit to the points using the function `fitpoly()` (in *AdvancedLaneFinding.py*), which uses the `polyfit()` function from the *NumPy* library.
 
-If the lanes were already detected the pipeline uses the previous fits to search for lane pixels using the `search_around_poly()` function (lines #223-277 of *AdvancedLaneFinding.py*).
+If the lanes were already detected the pipeline uses the previous fits to search for lane pixels using the `search_around_poly()` function (in *AdvancedLaneFinding.py*).
 
 The detected curve fits where stored using the Line() class, which is described in the video pipeline section.
 
@@ -103,17 +103,17 @@ A visualization of the sliding window method is visible below:
 
 #### 5. Calculation of lane curvature & vehicle position
 
-The curvature of the road is calculated in the `measure_curvature_real()`function (lines #280-304 of *AdvancedLaneFinding.py*) using the following equation, which "converts" the pixel values to meters:
+The curvature of the road is calculated in the `measure_curvature_real()`function (in *AdvancedLaneFinding.py*) using the following equation, which "converts" the pixel values to meters:
 
 `x = mx / (my**2) * a * (y**2) + (mx / my) * b * y + c`,
 
 where `x = a * (y**2) + b * y + c` is the parabola, and `mx` and `my` are the scale for the x and y axis.
 
-The position of the vehicle is calculated using the `get_position()`function (lines #307-320 of *AdvancedLaneFinding.py*). The function takes the base positions of the lanes, calculates the center point between them and returns the distance of the center point from the midpoint of the image.
+The position of the vehicle is calculated using the `get_position()`function (in *AdvancedLaneFinding.py*). The function takes the base positions of the lanes, calculates the center point between them and returns the distance of the center point from the midpoint of the image.
 
 #### 6. Draw lane lines, output curvature and vehicle position
 
-Th function `draw_lanes()` (lines #371-402 of *AdvancedLaneFinding.py*) takes the undistorted image, curves, position, curvature and inverse transformation matrix and outputs the original undistorted image with the following:
+Th function `draw_lanes()` (in *AdvancedLaneFinding.py*) takes the undistorted image, curves, position, curvature and inverse transformation matrix and outputs the original undistorted image with the following:
 
 * lane lines marked with green
 * curvature indicated in meters
@@ -129,7 +129,7 @@ The output for our example can be seen below:
 
 The main difference between processing images and videos is that in case of videos, it is useful to store data from previous frames to facilitate lane finding.
 
-For this I defined a class called `Line` (lines #7-26 of *AdvancedLaneFinding.py*) with some attributes related to lane lines. I used instances of this class to store data about the frames in order to:
+For this I defined a class called `Line` (in *AdvancedLaneFinding.py*) with some attributes related to lane lines. I used instances of this class to store data about the frames in order to:
 
 * decide whether to use the "sliding window" method or to search next to curves
 * average the recent fits to smooth the curves
