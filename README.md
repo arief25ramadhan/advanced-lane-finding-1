@@ -10,6 +10,8 @@
 
 ### Overview: Advanced Lane Finding Project
 
+This is a project I created for the Udacity Self-Driving Car Engineer Nanodegree. The goal was to build a pipeline of image processing functions that takes an image or video as input and outputs the image or video with lane lines marked and the curvature & distance from center calculated.
+
 The goals / steps of this project were the following:
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
@@ -24,7 +26,7 @@ The goals / steps of this project were the following:
 My solution consists of three files:
 
 * *P2_pipeline.py* contains the pipeline for image/video processing
-* *AdvancedLaneFinding.py* contains the class and function definitions for the pipeline and for image/video processing
+* *AdvancedLaneFinding.py* contains class and function definitions for the pipeline and for image/video processing
 * *test.py* runs image/video processing based on input parameters
 
 I imported *AdvancedLaneFinding.py* as *alf* in the pipeline to access the defined functions.
