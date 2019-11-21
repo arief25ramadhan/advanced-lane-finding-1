@@ -157,5 +157,5 @@ When testing on the hardest challenge video (with very different light condition
 
 As a summary I learned the following from this project:
 - the method used is fairly simple and works well on straight / slightly curvy roads with good lane visibility
-- making it work for harsher environments requires LOTS of rules and simply isn't feasible
-- because of this, in my opinion neural network approaches are far superior :)
+- making it work for harsher environments requires many hardcoded rules and simply isn't feasible on the long run
+- because of this, in my opinion neural network approaches are far more powerful for more complex environments
